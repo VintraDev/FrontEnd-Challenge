@@ -71,11 +71,46 @@ flowchart TD
 
 ## M2 — Identidade e conta
 
-- [ ] `M2-01` — Registro/login/session/logout e retorno após acesso protegido (RF-012–017).
+- [ ] `M2-01` — Registro/login/session/logout e retorno após acesso protegido (RF-012–017). **Parcial:** cadastro, login, sessão, expiração no refresh, logout e proteção do checkout implementados; tratamento de expiração em tela aberta pendente.
 - [ ] `M2-02` — Scope privado, limpeza no logout e troca A→B; proibir acesso a pedido alheio (RF-017/022).
 - [ ] `M2-03` — Favoritos otimizados com rollback (RF-023).
-- [ ] `M2-04` — Perfil, avatar, senha e carteiras (RF-018–021).
+- [ ] `M2-04` — Perfil, avatar, senha e carteiras (RF-018–021). **Parcial:** perfil, avatar e senha implementados para a sessão; alteração de e-mail e carteiras pendentes.
 - [ ] `M2-05` — E2E-03, E2E-04 e E2E-08.
+
+### Login e sessão — implementação parcial
+
+- Diálogo inspirado no frame desktop do Pencil com validação, exibição de senha, erro genérico de credenciais e fechamento por teclado. Login, consulta da sessão e logout passam por Axios/MSW; tokens e sessões fictícios persistem no navegador por até 24 horas. Checkout redireciona visitantes e retoma destino local validado. Contas de teste estão no README.
+- Testes Playwright de login inválido/válido, retorno, refresh, logout, expiração após refresh, redirect externo e layout mobile passaram; captura em 390 px inspecionada. A suíte completa passou no preview: 34 testes. `npm run typecheck`, `npm run build` e `npm run check:tokens` passaram.
+- Pendentes: recuperação de senha e login social; carrinho por usuário e merge (o carrinho atual ainda é do visitante), proteção/autorização das demais áreas privadas, teardown de socket de sessão, expiração em tela aberta e verificação de isolamento A→B. O mecanismo local não é segurança de produção.
+
+### Cadastro de conta
+
+- Diálogo de cadastro pelo frame do Pencil, com validação de nome, e-mail, senha e confirmação. O endpoint `POST /api/auth/register` valida, normaliza e detecta conflito; usuário e sessão são gravados atomicamente no IndexedDB. Novas senhas usam PBKDF2 com salt aleatório. Após cadastro, a sessão é iniciada e o retorno local é preservado entre login e cadastro.
+- `npm run check:tokens`, `npm run typecheck`, `npm run build` e a suíte Playwright no preview passaram: 39 testes, incluindo persistência e novo login, concorrência de cadastro, duplicidade, migração de sessões, redirect externo e viewport de 390 px. A tela mobile foi inspecionada; comparação visual formal desktop ainda não foi feita.
+- Carrinho por conta e merge, demais áreas privadas, expiração durante a navegação, recuperação de senha e login social seguem pendentes. A autenticação local simulada não equivale a um backend seguro de produção.
+
+- Ícones de Google e Facebook exportados do Pencil e aplicados aos botões de login e cadastro; login social permanece indisponível. `check:tokens`, `typecheck`, build e 9 testes Playwright de autenticação passaram no preview; captura mobile inspecionada.
+
+### Login e cadastro mobile
+
+- Frames mobile do Pencil adaptados em tela inteira com marca, campos, navegação entre formulários e botões sociais; diálogo mantém fechamento por teclado e rolagem para telas baixas. O layout desktop e os fluxos existentes de sessão são preservados.
+- Capturas de login e cadastro inspecionadas; testes de login/cadastro e retorno ao checkout em 320, 390 e 414 px passaram. `npm run check:tokens`, `npm run typecheck`, `npm run build` e 15 testes Playwright direcionados de autenticação e pagamento no preview passaram. Login social e recuperação de senha permanecem indisponíveis.
+
+### Interações da navegação mobile
+
+- Menu inferior da home mostra a quantidade do carrinho, destaca início/catálogo e fornece feedback de pressão com suporte a movimento reduzido. O ícone de conta autenticada abre um popover acessível com identidade e ação explícita de logout; favoritos seguem indisponíveis.
+- `npm run check:tokens`, `npm run typecheck`, `npm run build` e 4 testes Playwright do menu no preview passaram; 10 testes direcionados de menu, autenticação e carrinho também passaram antes do ajuste visual final. O menu permanece restrito à home, como no layout existente.
+
+### Cards e rodapé mobile
+
+- Cards promocionais e editoriais abaixo da paginação usam uma coluna e ocupam toda a largura disponível no mobile. O rodapé foi extraído para `src/components/layout/site-footer.tsx`, com estilos próprios e seções adaptadas a telas estreitas; home, detalhes, carrinho e checkout reutilizam o componente.
+- `npm run check:tokens`, `npm run typecheck`, `npm run build` e 19 testes Playwright direcionados no preview passaram, incluindo largura dos cards em 320/414 px, navegação do rodapé e presença no carrinho e detalhes. A inspeção visual formal permanece pendente.
+
+### Perfil do colecionador
+
+- Tela desktop baseada no frame do Pencil, com adaptação responsiva, carregamento e erro. `/account` exige sessão; `GET/PATCH /api/profile` e `POST /api/profile/password` validam a sessão no MSW e persistem dados por usuário. Nome, usuário, ENS e apelido, avatar PNG/JPEG/WebP (até 500 KB) e senha têm persistência simulada; mudança de e-mail e carteiras seguem indisponíveis.
+- Testados acesso sem sessão, persistência após refresh, troca entre contas A/B, nome sincronizado com sessão, erro de senha, nova senha, avatar e layout 320 px. A captura desktop foi inspecionada. `check:tokens`, `typecheck` e build passaram; a suíte completa teve 54 testes aprovados antes dos últimos ajustes de campos e sincronização, seguidos por 13 testes direcionados aprovados. Uma primeira tentativa de teste e outra após os botões de senha falharam por seletores/tempo; foram corrigidas e reexecutadas.
+- Pendentes: e-mail editável, carteiras e autorização das demais áreas privadas, controles de concorrência no mock e auditoria completa de acessibilidade/visual. Persistência local é somente demonstrativa.
 
 ## M3 — Carrinho e cotação
 
@@ -91,6 +126,10 @@ flowchart TD
 - `npm run check:tokens`, `npm run typecheck`, `npm run build` e `CHROMIUM_PATH=/usr/bin/chromium SMOKE_PREVIEW=1 npm run test:smoke` passaram; 13 testes incluem persistência, preço, cupons e rejeição de estoque/quantidade. O carrinho desktop foi inspecionado visualmente.
 - Checkout está desabilitado. Sessão, merge, preço/estoque em tempo real, cenários resetáveis e isolamento por usuário permanecem pendentes.
 
+### Correção do acesso à revisão
+
+- A cor do link “Continuar explorando” foi isolada para não sobrescrever o texto do botão de revisão. `check:tokens`, `typecheck`, build e 5 testes Playwright de checkout/carrinho mobile passaram no preview; o teste verifica as cores computadas e a navegação.
+
 ### Carrinho mobile
 
 - Layout adaptado ao frame do Pencil, com cabeçalho de retorno, cartões, controles de quantidade e resumo. O controle de remoção permanece disponível em cada item e o checkout segue desabilitado.
@@ -98,12 +137,43 @@ flowchart TD
 
 ## M4 — Compra, tempo real e recuperação
 
-- [ ] `M4-01` — Formulários e fluxo checkout protegidos, rede e carteira (RF-031–033).
-- [ ] `M4-02` — Cotação autoritativa + revalidação + reconfirmação (RF-034–035).
-- [ ] `M4-03` — Pedido com chave idempotente, snapshot imutável, recibo confirmado (RF-036–042).
+- [ ] `M4-01` — Formulários e fluxo checkout protegidos, rede e carteira (RF-031–033). **Parcial:** prévia desktop com campos e resumo, protegida por sessão; validação de envio, carteiras e fluxo completo pendentes.
+- [ ] `M4-02` — Cotação autoritativa + revalidação + reconfirmação (RF-034–035). **Parcial:** prévia consulta cotação versionada ao abrir; faltam expiração, comparação de alterações e reconfirmação para pedido.
+- [ ] `M4-03` — Pedido com chave idempotente, snapshot imutável, recibo confirmado (RF-036–042). **Parcial:** prévia visual demonstrativa; pedidos e recibos reais ainda não implementados.
 - [ ] `M4-04` — Realtime para NFT e pedido, versões, ownerScope e cleanup (RF-043–047).
 - [ ] `M4-05` — Cenários de timeout após commit, reconnect, old events e reset (RF-048–049).
 - [ ] `M4-06` — E2E-06, E2E-07, E2E-09 e E2E-10.
+
+### Pagamento desktop — prévia
+
+- Frame de pagamento adaptado com formulário de prévia e resumo do carrinho. `GET /api/cart` e `POST /api/quotes` fornecem os valores; dados do formulário não são salvos. O carrinho oferece acesso à revisão somente com cotação disponível.
+- A revisão agora exige sessão; conexão de carteira e confirmação permanecem desabilitadas até validação, idempotência e pedidos serem implementados. A rota de recibo mostra indisponibilidade para pedidos reais e oferece uma prévia separada.
+- `npm run check:tokens`, `npm run typecheck`, `npm run build` e `CHROMIUM_PATH=/usr/bin/chromium SMOKE_PREVIEW=1 npm run test:smoke` passaram; 22 testes, incluindo carrinho vazio, cupom, refresh e confirmação desabilitada. Tela desktop inspecionada visualmente; fidelidade integral e frame mobile ainda não validados.
+
+### Pagamento mobile — prévia
+
+- Adaptação do frame mobile do Pencil com retorno ao carrinho, estado de carteira, opções de conexão desabilitadas, cotação do carrinho, acesso expansível aos dados de revisão e botão fixo de confirmação desabilitado. Sem carteira implementada, o estado vazio substitui as carteiras conectadas fictícias do frame.
+- Captura em 414 px inspecionada; testes de autenticação, cotação, retorno, expansão e ausência de overflow em 320, 390 e 414 px passaram. `npm run check:tokens`, `npm run typecheck`, `npm run build` e a suíte completa no preview passaram (42 testes). A primeira execução dos testes direcionados falhou por seletores que não consideravam o rótulo alterado e elementos ocultos; corrigidos e reexecutados.
+- Cadastro/seleção/conexão de carteiras, confirmação, pedidos e isolamento/merge do carrinho por usuário continuam pendentes; o formulário permanece uma prévia e não salva dados.
+
+### Confirmação de pedido — prévia demonstrativa
+
+- `/orders/preview` apresenta o comprovante conforme o frame desktop do Pencil, com dados de demonstração obtidos por Axios de `GET /api/orders/preview` interceptado pelo MSW. O checkout inclui acesso explícito à prévia; nenhum pedido é criado ou confirmado. Outros IDs mostram indisponibilidade e o explorador está desabilitado.
+- A prévia foi testada em 390 e 1440 px, sem overflow horizontal; captura desktop inspecionada. `npm run check:tokens`, `npm run typecheck`, `npm run build` e a suíte Playwright no preview passaram (30 testes). O estado de falha de rede da prévia e a fidelidade visual mobile ainda não foram verificados.
+- Pendentes: criação idempotente, estados de pedido, consulta autorizada, recibo snapshot de pedido confirmado, recuperação e reconciliação. A prévia não satisfaz esses requisitos.
+
+### Feedback de interação
+
+- Hover e pressão aplicados aos controles e links disponíveis, com foco visível e respeito a `prefers-reduced-motion`; estados desabilitados não recebem efeito de pressão. Tokens de duração e escala são provisórios.
+- `npm run check:tokens`, `npm run typecheck` e `npm run build` passaram; 4 testes Playwright direcionados de interação e checkout passaram no preview. A primeira execução teve falha no teste por acionar a navegação ao soltar o mouse; a sequência foi corrigida e reexecutada. A auditoria completa de acessibilidade e a regressão visual seguem pendentes.
+
+### Cards e navegação do rodapé
+
+- Cards de NFT no catálogo, carrinho e detalhes abrem o produto por toda a área de conteúdo; a imagem recebe aproximação suave no hover/foco, desativada com movimento reduzido. Cards de destaques e do diário apresentam aviso acessível quando o conteúdo não existe.
+- Categorias do rodapé abrem o catálogo filtrado pela URL. Perfil aponta para a rota existente, ainda não implementada; ajuda, redes, carteiras e contatos de exemplo informam indisponibilidade. A inscrição na newsletter segue desabilitada.
+- Validados `npm run check:tokens`, `npm run typecheck`, `npm run build` e `CHROMIUM_PATH=/usr/bin/chromium SMOKE_PREVIEW=1 npm run test:smoke`: 27 testes passaram no preview. A primeira tentativa do Playwright falhou porque o sandbox bloqueou a porta local; a execução com permissão para o servidor passou. Revisão visual integral e auditoria de acessibilidade permanecem pendentes.
+
+- Rodapé: textos de links e botões usam `--text-primary` (`#f5f1eb`); hover usa `--action-primary`, sem sublinhado. `npm run check:tokens`, `npm run typecheck` e `npm run build` passaram após o ajuste; inspeção visual específica permanece pendente.
 
 ## M5 — Qualidade, operações e entrega
 
@@ -130,3 +200,11 @@ Status real:
 ```
 
 **Critérios de pronto:** [Definition of Ready / Done](06-qualidade/definition-of-done.md). **Riscos:** [Spikes](07-planejamento/spikes-e-dependencias.md). **Mapa de testes:** [Rastreabilidade](06-qualidade/matriz-de-testes-e-requisitos.md).
+
+### Fundação A1/A2 — incremento parcial
+
+- Contratos existentes de usuário, sessão, catálogo, edição, carrinho, item, cotação e prévia de recibo foram reaproveitados e suas partes compartilhadas exportadas. `api.ts` registra códigos gerais e aceita os códigos específicos já emitidos pelos handlers; ainda não existe conversão de códigos nem contratos finais de pedido/carteira.
+- As chaves existentes foram centralizadas em `src/lib/query-keys.ts` sem alterar seus valores. Perfil e chaves reservadas para dados privados incluem o usuário; carrinho e cotação continuam explicitamente de visitante. Query usa os defaults do TanStack (incluindo três retries no cliente), exceto as consultas que já definem `retry: false`; mutations invalidam as chaves existentes. Não foi implementado o isolamento de carrinho de conta nem merge.
+- `POST /api/__test/reset` limpa sessões, usuários cadastrados, perfis e carrinhos persistidos e restaura as duas contas de fixture. As duas bases IndexedDB são limpas sequencialmente, não em uma transação atômica entre bases. A chamada não limpa token local nem cache Query de uma página já aberta; testes devem reiniciar a página/estado do cliente após reset. Pedidos, favoritos e carteiras ainda não possuem repositórios. O endpoint existe apenas quando o worker mock está ativo.
+- Cenários configuráveis de latência, rede, erros e conflitos, reset integral de recursos futuros, schemas finais de carteira/pedido e validação completa de contratos nas fronteiras permanecem pendentes; M0-02 e M0-05 continuam abertos. Proposta de compatibilização: manter os DTOs e códigos existentes, adicionar mapeamento explícito e versionar/adaptar os novos contratos antes de mudar endpoints, handlers ou consumidores.
+- Validação deste incremento: `npm run typecheck` e `npm run build` passaram; `CHROMIUM_PATH=/usr/bin/chromium SMOKE_PREVIEW=1 npm run test:smoke` passou com 55 testes. A primeira suíte teve 54 aprovados e uma falha no teste novo por chamada anterior à inicialização do worker; após sincronização, o teste direcionado e a suíte completa passaram no preview.

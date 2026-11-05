@@ -1,6 +1,6 @@
 # Frontend Challenge — fundação
 
-Fundação, catálogo, detalhe e carrinho de visitante estão parcialmente implementados. Autenticação, favoritos, checkout e pedidos ainda não estão disponíveis.
+Fundação, catálogo, detalhe e carrinho de visitante estão parcialmente implementados. Cadastro, login e sessão simulados estão parcialmente disponíveis; favoritos, checkout completo e pedidos ainda estão pendentes.
 
 ## Execução
 
@@ -31,4 +31,16 @@ A nova conexão testada é explícita, não comprova recuperação automática a
 
 ## Carrinho simulado de visitante
 
-O carrinho é persistido no IndexedDB do navegador pelo mock MSW. Adicione itens a partir do detalhe. O cupom fictício `KURIO10` aplica 10% e `EXPIRADO` retorna erro; a taxa estimada da simulação é 0.016 ETH. A cotação é calculada por Decimal no mock e vinculada à versão do carrinho. Não há sessão, merge de carrinho ou checkout nesta etapa. Para limpar os dados de demonstração, remova o banco `kurio-mock-store` nas ferramentas do navegador.
+O carrinho é persistido no IndexedDB do navegador pelo mock MSW. Adicione itens a partir do detalhe. O cupom fictício `KURIO10` aplica 10% e `EXPIRADO` retorna erro; a taxa estimada da simulação é 0.016 ETH. A cotação é calculada por Decimal no mock e vinculada à versão do carrinho. O carrinho ainda é compartilhado como visitante mesmo após login; carrinhos por conta e merge ainda não foram implementados. A revisão de checkout requer login e continua sendo uma prévia. Para limpar os dados de demonstração, remova o banco `kurio-mock-store` nas ferramentas do navegador.
+
+
+## Login de demonstração
+
+Contas fictícias: `ana@kurio.test` / `KurioDemo123!` e `bruno@kurio.test` / `KurioDemo456!`. O login usa Axios e MSW, e a sessão expira após 24 horas. O token de demonstração fica no armazenamento local, e o repositório simulado de sessões fica em IndexedDB (`kurio-mock-auth`); senhas não são armazenadas em texto puro. Este mecanismo é apenas uma simulação local e não oferece segurança de produção.
+
+O carrinho ainda não é isolado por conta nem mesclado no login. Dados privados, logout de socket vinculado à sessão, expiração em tempo real durante uma tela aberta e cenários determinísticos de falha continuam pendentes.
+
+O cadastro cria uma conta fictícia persistida no IndexedDB e inicia sessão; os e-mails são normalizados e duplicatas retornam conflito. Novas senhas são verificadas com PBKDF2 e salt aleatório no mock. Contas e sessões locais são apenas para demonstração e podem ser inspecionadas no navegador.
+
+
+O perfil simulado em `/account` permite editar nome, nome de usuário, ENS, apelido e avatar, além de alterar a senha. Os dados são associados à sessão e persistem em `kurio-mock-auth`; o e-mail permanece somente para leitura, e a gestão de carteiras ainda não foi implementada.
