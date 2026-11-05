@@ -24,3 +24,10 @@
 - Milestone 4: responsividade, a11y, E2E, Lighthouse, deploy e documentação.
 
 Preferir incrementos pequenos, executáveis e revisáveis. Não trocar a stack obrigatória por alternativas convenientes.
+
+## Design system
+
+- Consultar o frame “Design System / CSS Variables” no Pencil via MCP e `docs/04-design-system/tokens-e-componentes.md` antes de alterar UI.
+- Centralizar valores de design em `src/styles/tokens.css`: primitivos, aliases semânticos e tokens de componentes. Interface e componentes devem usar tokens semânticos/de componente para cores, tipografia, espaçamento, raios e bordas; utilitários Tailwind devem apontar para esses tokens.
+- Não usar cores literais nem paletas Tailwind padrão em componentes. Executar `npm run check:tokens`; a verificação cobre cores, não substitui revisão dos demais valores.
+- Novos valores sem correspondência no Pencil devem ser identificados como decisão provisória, justificados e centralizados. Validar foco, contraste, estados, responsividade e movimento reduzido quando aplicáveis.

@@ -19,7 +19,7 @@ export function Diagnostics() {
     socket.on('order.updated', () => setEvents((previous) => [...previous, 'order.updated']))
     return () => { socket.removeAllListeners(); socket.disconnect() }
   }, [generation])
-  return <section className="rounded-lg border border-neutral-200 bg-white p-6" aria-label="Diagnóstico de rede">
+  return <section className="rounded-lg border border-border bg-surface p-6" aria-label="Diagnóstico de rede">
     <h2 className="text-lg font-semibold">Diagnóstico da fundação</h2>
     <p role="status" className="mt-3">REST: {health.isPending ? 'carregando' : health.isError ? 'erro' : `${health.data.status} (${health.data.source})`}</p>
     <p role="status">Socket.IO: {socketStatus}</p>

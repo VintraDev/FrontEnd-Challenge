@@ -1,0 +1,74 @@
+/* Valores do frame “Design System / CSS Variables” no Pencil. */
+:root {
+  /* Primitivos */
+  --color-brown-950: #140d0a;
+  --color-brown-900: #241612;
+  --color-brown-800: #2f1d15;
+  --color-cream-50: #f5f1eb;
+  --color-sand-300: #cfb28c;
+  --color-gold-500: #d28a4c;
+  --color-orange-500: #e89b55;
+  --color-coral-500: #f0805f;
+  --color-success-500: #59c36a;
+  --color-error-500: #ed1b2e;
+  --color-info-500: #4086f4;
+  --color-border-primitive: #38220f;
+
+  --font-mono: 'Roboto Mono', monospace;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.375rem;
+  --font-size-2xl: 2rem;
+  --font-size-display: 2.6875rem;
+  --line-height-display: 1.08;
+  --line-height-heading: 1.15;
+  --line-height-title: 1.25;
+  --line-height-body: 1.5;
+  --line-height-label: 1.4;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-pill: 2.5rem;
+
+  /* Espessuras provisórias para os componentes do shell. */
+  --border-width-default: 1px;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+
+  /* Semânticos */
+  --bg-canvas: var(--color-brown-950);
+  --bg-surface: var(--color-brown-900);
+  --bg-surface-raised: var(--color-brown-800);
+  --text-primary: var(--color-cream-50);
+  --text-secondary: var(--color-sand-300);
+  --action-primary: var(--color-orange-500);
+  --action-primary-hover: var(--color-gold-500);
+  --border-default: var(--color-border-primitive);
+  --focus-ring: var(--color-orange-500);
+  --feedback-success: var(--color-success-500);
+  --feedback-error: var(--color-error-500);
+  --feedback-info: var(--color-info-500);
+
+  /* Componentes */
+  --button-primary-bg: var(--action-primary);
+  --button-primary-text: var(--bg-canvas);
+  --button-primary-hover-bg: var(--action-primary-hover);
+  --button-disabled-bg: var(--bg-surface-raised);
+  --button-disabled-text: var(--text-secondary);
+  --button-radius: var(--radius-md);
+  --input-bg: var(--bg-surface);
+  --input-border: var(--border-default);
+  --card-bg: var(--bg-surface);
+  --card-radius: var(--radius-lg);
+}
