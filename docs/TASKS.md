@@ -35,9 +35,9 @@ flowchart TD
 
 ## M1 — Descoberta e catálogo
 
-- [ ] `M1-01` — Shell visual, tokens derivados do protótipo inspecionado pelo MCP do Pencil, inventário de assets e grids (RF-050–053). **Parcial:** tokens do frame Design System, fonte local, botão e shell de diagnóstico adaptados; inventário de assets, grids e shell fiel às telas continuam pendentes.
-- [ ] `M1-02` — Busca, filtros combinados, sort e paginação na URL (RF-001–008).
-- [ ] `M1-03` — Detalhe, seleção de edição e quantidade, 404 e indisponibilidade (RF-009–011).
+- [ ] `M1-01` — Shell visual, tokens derivados do protótipo inspecionado pelo MCP do Pencil, inventário de assets e grids (RF-050–053). **Parcial:** Home desktop, grid, tokens e quatro assets locais do Pencil implementados; fidelidade integral, inventário completo e comparação visual detalhada continuam pendentes; a Home mobile, o footer e a navegação inferior foram adaptados ao frame do Pencil.
+- [ ] `M1-02` — Busca, filtros combinados, sort e paginação na URL (RF-001–008). **Parcial:** busca, coleção, rede, faixa de preço, ordenação e página passam por Axios/MSW e URL; faltam testes completos de falha, respostas fora de ordem e cenários resetáveis.
+- [ ] `M1-03` — Detalhe, seleção de edição e quantidade, 404 e indisponibilidade (RF-009–011). **Parcial:** detalhe desktop via Axios/MSW, edições e limites, 404 e relacionados; faltam galeria completa, favoritos e checkout reais e regressão visual formal; a variante mobile foi adaptada e testada.
 - [ ] `M1-04` — Testes E2E-01 e E2E-02, incluindo respostas fora de ordem.
 
 ### Evidência da fundação visual — 05/11/2026
@@ -45,6 +45,29 @@ flowchart TD
 - `npm run check:tokens`, `npm run typecheck` e `npm run build`: passaram.
 - `CHROMIUM_PATH=/usr/bin/chromium SMOKE_PREVIEW=1 npm run test:smoke`: 5 testes passaram, incluindo cores e fonte no navegador, foco por teclado e ausência de overflow em 390, 768 e 1440 px.
 - Os testes verificam o shell de diagnóstico; não comprovam fidelidade das telas do marketplace nem acessibilidade completa. A checagem automática de tokens cobre apenas padrões de cores literais.
+
+### Home desktop — implementação parcial
+
+- Home e catálogo usam quatro imagens locais da referência, filtros por coleção/rede/preço, busca, ordenação e paginação via `GET /api/nfts`; fixtures em memória não fornecem persistência nem reset. O detalhe e os fluxos de conta/carrinho ainda são placeholders.
+- O botão, checkbox, input, select, card, skeleton e sheet seguem o padrão de componentes shadcn/ui. A regra de preferência por shadcn está registrada nas instruções do projeto.
+- `npm run check:tokens`, `npm run typecheck`, `npm run build` e `CHROMIUM_PATH=/usr/bin/chromium SMOKE_PREVIEW=1 npm run test:smoke` passaram: 7 testes. A inspeção visual desktop foi realizada; não há baseline visual nem auditoria de acessibilidade/Lighthouse.
+
+### Home mobile e footer
+
+- Curva da navegação inferior reproduzida com o caminho vetorial do frame mobile; botão central, área segura e filtros em Sheet acessível implementados. O footer inclui as seções de benefícios, contato e navegação; newsletter e recursos sem implementação não simulam sucesso.
+- `npm run check:tokens`, `npm run typecheck` e `npm run build`: passaram. `CHROMIUM_PATH=/usr/bin/chromium SMOKE_PREVIEW=1 npm run test:smoke`: 9 testes passaram. A tela mobile foi inspecionada em 414 px. A primeira tentativa após a inspeção não iniciou por porta ocupada; passou após encerrar o preview.
+- As abas de novos lançamentos e em alta, favoritos, conta e carrinho ainda dependem dos respectivos fluxos; fidelidade pixel a pixel, baseline visual e Lighthouse seguem pendentes.
+
+### Detalhe desktop
+
+- `GET /api/nfts/:id` consulta a mesma fixture do catálogo, retorna 404 e fornece edições com estoque; a resposta é validada com Zod. A interface permite trocar de edição e respeita o estoque. Compra e favoritos permanecem desabilitados até a implementação de seus fluxos.
+- `npm run check:tokens`, `npm run typecheck` e `npm run build` passaram; `CHROMIUM_PATH=/usr/bin/chromium SMOKE_PREVIEW=1 npm run test:smoke` passou com 11 testes, incluindo acesso direto, 404, edição, limite de quantidade e navegação relacionada. O detalhe desktop foi inspecionado visualmente.
+- Há apenas uma imagem real por NFT; detalhes completos, persistência do mock, galeria e comparação visual formal permanecem pendentes.
+
+### Detalhe mobile
+
+- Frame mobile adaptado com imagem, painel sobreposto e barra fixa de quantidade, preço e carrinho. O desktop mantém galeria e controles em colunas. Favoritos permanecem indisponíveis; a fixture fornece somente uma imagem por NFT.
+- `npm run check:tokens`, `npm run typecheck` e `npm run build` passaram. `CHROMIUM_PATH=/usr/bin/chromium SMOKE_PREVIEW=1 npm run test:smoke`: 20 testes passaram, incluindo seleção, quantidade e inclusão no carrinho em 320, 390 e 414 px e verificação estrutural desktop. Comparação visual realizada em 414 px; baseline formal permanece pendente.
 
 ## M2 — Identidade e conta
 
@@ -56,11 +79,22 @@ flowchart TD
 
 ## M3 — Carrinho e cotação
 
-- [ ] `M3-01` — Carrinho visitante/conta, atualização de quantidade e remoção (RF-024–026).
+- [ ] `M3-01` — Carrinho visitante/conta, atualização de quantidade e remoção (RF-024–026). **Parcial:** visitante persistido em IndexedDB, com inclusão, edição e remoção via Axios/MSW; conta e isolamento por usuário ainda pendentes.
 - [ ] `M3-02` — Merge transacional após autenticar, sem duplicação (RF-027).
-- [ ] `M3-03` — Cupom e totais ETH decimal string pela API (RF-028–029).
+- [ ] `M3-03` — Cupom e totais ETH decimal string pela API (RF-028–029). **Parcial:** cotação de demonstração versionada e cupons KURIO10/EXPIRADO, via MSW e Decimal; integração com checkout e cenários de alteração de preço pendentes.
 - [ ] `M3-04` — Mudanças de estoque/preço na UI e invalidação de quote (RF-030).
 - [ ] `M3-05` — E2E-05 e casos de estoque/cupom/refresh.
+
+### Carrinho desktop — visitante
+
+- Inclusão a partir do detalhe, edição e remoção por edição passam por Axios/MSW; IndexedDB persiste carrinho e cupom do visitante. O mock valida estoque e quantidades inteiras e calcula subtotal, desconto e taxa estimada de 0.016 ETH com Decimal via `POST /api/quotes`. Cupom `KURIO10` concede 10%; `EXPIRADO` exercita erro.
+- `npm run check:tokens`, `npm run typecheck`, `npm run build` e `CHROMIUM_PATH=/usr/bin/chromium SMOKE_PREVIEW=1 npm run test:smoke` passaram; 13 testes incluem persistência, preço, cupons e rejeição de estoque/quantidade. O carrinho desktop foi inspecionado visualmente.
+- Checkout está desabilitado. Sessão, merge, preço/estoque em tempo real, cenários resetáveis e isolamento por usuário permanecem pendentes.
+
+### Carrinho mobile
+
+- Layout adaptado ao frame do Pencil, com cabeçalho de retorno, cartões, controles de quantidade e resumo. O controle de remoção permanece disponível em cada item e o checkout segue desabilitado.
+- `npm run check:tokens`, `npm run typecheck` e `npm run build` passaram. `CHROMIUM_PATH=/usr/bin/chromium SMOKE_PREVIEW=1 npm run test:smoke` passou com 16 testes, incluindo interações e ausência de overflow em 320, 390 e 414 px. Comparação visual realizada em 414 px; regressão visual formal permanece pendente.
 
 ## M4 — Compra, tempo real e recuperação
 

@@ -31,3 +31,5 @@ Preferir incrementos pequenos, executáveis e revisáveis. Não trocar a stack o
 - Centralizar valores de design em `src/styles/tokens.css`: primitivos, aliases semânticos e tokens de componentes. Interface e componentes devem usar tokens semânticos/de componente para cores, tipografia, espaçamento, raios e bordas; utilitários Tailwind devem apontar para esses tokens.
 - Não usar cores literais nem paletas Tailwind padrão em componentes. Executar `npm run check:tokens`; a verificação cobre cores, não substitui revisão dos demais valores.
 - Novos valores sem correspondência no Pencil devem ser identificados como decisão provisória, justificados e centralizados. Validar foco, contraste, estados, responsividade e movimento reduzido quando aplicáveis.
+
+- Priorizar componentes oficiais shadcn/ui sempre que atenderem à necessidade; reutilizá-los em `components/ui` e adaptá-los aos tokens do projeto. Criar componentes próprios quando não houver equivalente adequado, preservando acessibilidade e registrando a decisão quando relevante.

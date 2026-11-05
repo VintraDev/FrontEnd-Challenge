@@ -7,7 +7,7 @@
 
 ## 1. Decisões arquiteturais
 
-- **Build e interface:** Vite + React + TypeScript (strict). Next.js não será utilizado, porque o roteamento obrigatório é TanStack Router.
+- **Build e interface:** Vite + React + TypeScript (strict). O roteamento é TanStack Router.
 - **Roteamento:** TanStack Router baseado em arquivos, com parâmetros de URL tipados/validados por Zod e rotas protegidas.
 - **Estado remoto:** TanStack Query para consultas, mutations, cache, invalidação, atualização otimista e rollback.
 - **Rede REST:** Axios com um único cliente HTTP, contratos tipados e propagação de `AbortSignal` para cancelamento.

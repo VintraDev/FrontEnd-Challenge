@@ -77,3 +77,5 @@ Limitações e follow-up:
 - Fonte de valores: frame “Design System / CSS Variables” no Pencil via MCP; implementação central em `src/styles/tokens.css`.
 - Componentes e páginas usam tokens semânticos ou de componente para cores, tipografia, espaçamento, raios e bordas. Adições não presentes no Pencil devem ser documentadas como provisórias.
 - Execute `npm run check:tokens` para detectar cores literais e paletas padrão em `src`; essa checagem não cobre todas as propriedades de design e não substitui revisão visual e de acessibilidade.
+
+- Priorizar componentes oficiais shadcn/ui sempre que atenderem à necessidade; reutilizá-los em `components/ui` e adaptá-los aos tokens do projeto. Criar componentes próprios quando não houver equivalente adequado, preservando acessibilidade e registrando a decisão quando relevante.

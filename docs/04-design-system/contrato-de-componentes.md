@@ -42,3 +42,5 @@ type NftCardProps = {
 - [ ] Teste de comportamento relevante e captura visual quando crítico.
 
 [Code style](../06-qualidade/qualidade-de-codigo.md) · [Acessibilidade](../06-qualidade/acessibilidade.md).
+
+- Priorizar componentes oficiais shadcn/ui sempre que atenderem à necessidade; reutilizá-los em `components/ui` e adaptá-los aos tokens do projeto. Criar componentes próprios quando não houver equivalente adequado, preservando acessibilidade e registrando a decisão quando relevante.

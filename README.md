@@ -1,6 +1,6 @@
 # Frontend Challenge — fundação
 
-Implementação limitada ao primeiro milestone. As rotas exibem placeholders e não representam funcionalidades do marketplace.
+Fundação, catálogo, detalhe e carrinho de visitante estão parcialmente implementados. Autenticação, favoritos, checkout e pedidos ainda não estão disponíveis.
 
 ## Execução
 
@@ -28,3 +28,7 @@ O cliente força transporte WebSocket e usa namespace padrão. O pacote publicad
 A primeira tentativa falhou por usar MSW 3, incompatível com o peer declarado do binding; foi ajustada para MSW 2. Outra tentativa falhou no build por usar a API da branch principal, e a primeira execução no navegador não conectou por correspondência incorreta da URL; ambas foram corrigidas antes dos testes acima. O primeiro teste no sandbox também não iniciou o servidor por `EPERM` ao abrir porta; foi executado com acesso local autorizado.
 
 A nova conexão testada é explícita, não comprova recuperação automática após interrupção. Persistência, cenários de falha, tolerância a duplicatas/eventos antigos, reconciliação REST, isolamento de sessão, fluxo de compra, telas fiéis ao Figma, E2E de produto, snapshots visuais, Lighthouse, lint e publicação permanecem pendentes. Nenhum deploy foi realizado.
+
+## Carrinho simulado de visitante
+
+O carrinho é persistido no IndexedDB do navegador pelo mock MSW. Adicione itens a partir do detalhe. O cupom fictício `KURIO10` aplica 10% e `EXPIRADO` retorna erro; a taxa estimada da simulação é 0.016 ETH. A cotação é calculada por Decimal no mock e vinculada à versão do carrinho. Não há sessão, merge de carrinho ou checkout nesta etapa. Para limpar os dados de demonstração, remova o banco `kurio-mock-store` nas ferramentas do navegador.
