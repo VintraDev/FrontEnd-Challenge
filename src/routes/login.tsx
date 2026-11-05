@@ -1,3 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router'
-export const Route = createFileRoute('/login')({ component: Page })
-function Page() { return <><h1 className="text-2xl font-bold">Login</h1><p className="mt-3">Esta funcionalidade ainda não foi implementada.</p></> }
+import { LoginPage } from '@/features/auth/login-page'
+export const Route = createFileRoute('/login')({ validateSearch: (search: Record<string, unknown>) => ({ redirect: typeof search.redirect === 'string' ? search.redirect : undefined }), component: Page })
+function Page() { const { redirect } = Route.useSearch(); return <LoginPage redirect={redirect} /> }

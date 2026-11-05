@@ -1,0 +1,36 @@
+.profile-layout { display: grid; grid-template-columns: 310px minmax(0, 1fr); gap: var(--space-8); margin-top: var(--space-8); align-items: start; }
+.profile-sidebar { background: var(--bg-surface); padding: var(--space-4) 0; }
+.profile-sidebar h2 { font-size: var(--font-size-lg); font-weight: 700; padding: 0 var(--space-4) var(--space-3); }
+.profile-sidebar nav { display: grid; }
+.profile-sidebar nav > a, .profile-sidebar nav > button { display: flex; align-items: center; gap: var(--space-3); min-height: 48px; padding: var(--space-2) var(--space-4); color: var(--action-primary); text-align: left; font-size: var(--font-size-sm); cursor: pointer; }
+.profile-sidebar nav > a[aria-current='page'] { border-left: var(--space-1) solid var(--action-primary-hover); color: var(--text-primary); font-weight: 700; }
+.profile-sidebar .profile-logout { border-top: var(--border-width-default) solid var(--border-default); font-weight: 700; }
+.profile-sidebar nav > button:disabled { color: var(--text-secondary); cursor: not-allowed; }
+.profile-sidebar p { padding: var(--space-2) var(--space-4); color: var(--feedback-error); font-size: var(--font-size-xs); }
+.profile-content h1, .profile-password h2 { font-size: var(--font-size-md); font-weight: 700; }
+.profile-form { margin-top: var(--space-8); }
+.profile-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); }
+.profile-fields label, .profile-password label { display: block; color: var(--text-primary); font-size: var(--font-size-sm); }
+.profile-fields label input, .profile-password label input { margin-top: var(--space-2); }
+.profile-fields label small { display: block; margin-top: var(--space-2); }
+.profile-avatar { display: grid; align-content: start; gap: var(--space-2); color: var(--text-primary); font-size: var(--font-size-sm); }
+.profile-fields label > span:not(.profile-optional) { color: var(--feedback-error); }
+.profile-fields small, .profile-avatar small, .profile-note { color: var(--text-secondary); font-size: var(--font-size-xs); }
+.profile-avatar-actions { display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; }
+.profile-avatar-image { display: grid; place-items: center; width: 50px; height: 50px; overflow: hidden; border-radius: 50%; background: var(--bg-surface-raised); color: var(--action-primary-hover); }
+.profile-avatar-image img { width: 100%; height: 100%; object-fit: cover; }
+.profile-form > .ds-button { margin-top: var(--space-6); }
+.profile-password { display: grid; gap: var(--space-4); max-width: 417px; margin-top: var(--space-12); }
+.profile-password .ds-button { justify-self: start; }
+.profile-password-control { display: block; position: relative; }
+.profile-password-control input { margin-top: var(--space-2); padding-right: var(--space-12); }
+.profile-password-control button { position: absolute; right: var(--space-1); bottom: 0; display: grid; place-items: center; width: 44px; height: 44px; color: var(--text-secondary); cursor: pointer; }
+.profile-error { color: var(--feedback-error); font-size: var(--font-size-sm); margin-top: var(--space-3); }
+.profile-form [role='status'], .profile-password [role='status'] { color: var(--feedback-success); margin-top: var(--space-3); font-size: var(--font-size-sm); }
+.profile-note { display: flex; gap: var(--space-2); align-items: center; margin-top: var(--space-8); }
+.profile-loading { display: grid; gap: var(--space-6); }
+.profile-loading > * { height: 120px; }
+.profile-feedback { display: grid; justify-items: start; gap: var(--space-4); }
+.profile-feedback a { color: var(--action-primary); }
+@media (hover: hover) { .profile-sidebar nav > a:hover, .profile-sidebar nav > button:not(:disabled):hover { background: var(--bg-surface-raised); } }
+@media (max-width: 700px) { .profile-layout { grid-template-columns: minmax(0, 1fr); margin-top: 0; } .profile-sidebar nav { grid-template-columns: repeat(2, minmax(0, 1fr)); } .profile-sidebar nav > a, .profile-sidebar nav > button { min-width: 0; } .profile-fields { grid-template-columns: minmax(0, 1fr); } }

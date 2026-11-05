@@ -37,3 +37,14 @@ export async function changeCart(change: (cart: CartRecord) => CartRecord): Prom
     tx.onerror = () => reject(failure ?? tx.error)
   })
 }
+
+export async function resetCarts(): Promise<void> {
+  const db = await openDatabase()
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction('cart', 'readwrite')
+    tx.objectStore('cart').clear()
+    tx.oncomplete = () => resolve()
+    tx.onabort = () => reject(tx.error)
+    tx.onerror = () => reject(tx.error)
+  })
+}

@@ -1,3 +1,4 @@
+import { queryKeys } from '@/lib/query-keys'
 import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { io } from 'socket.io-client'
@@ -6,7 +7,7 @@ import { getHealth } from './api'
 
 type SocketStatus = 'conectando' | 'conectado' | 'desconectado' | 'erro'
 export function Diagnostics() {
-  const health = useQuery({ queryKey: ['health'], queryFn: ({ signal }) => getHealth(signal), retry: false })
+  const health = useQuery({ queryKey: queryKeys.health(), queryFn: ({ signal }) => getHealth(signal), retry: false })
   const [socketStatus, setSocketStatus] = useState<SocketStatus>('conectando')
   const [events, setEvents] = useState<string[]>([])
   const [generation, setGeneration] = useState(0)

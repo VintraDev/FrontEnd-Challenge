@@ -42,6 +42,12 @@
   --radius-xl: 1.5rem;
   --radius-pill: 2.5rem;
 
+  /* Movimento provisório para feedback de interação. */
+  --motion-fast: 160ms;
+  --motion-ease: ease-out;
+  --press-scale: 0.98;
+  --image-hover-scale: 1.04;
+
   /* Espessuras provisórias para os componentes do shell. */
   --border-width-default: 1px;
   --focus-ring-width: 2px;

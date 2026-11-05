@@ -24,7 +24,7 @@
 .cart-totals > div { display: flex; justify-content: space-between; gap: var(--space-3); }
 .cart-totals dd { text-align: right; }
 .cart-grand-total { border-top: var(--border-width-default) solid var(--action-primary-hover); padding-top: var(--space-4); font-size: var(--font-size-lg); font-weight: 700; }
-.cart-summary > a, .coupon-applied button { color: var(--action-primary); }
+.cart-continue, .coupon-applied button { color: var(--action-primary); }
 .cart-disclaimer, .coupon-applied { color: var(--text-secondary); font-size: var(--font-size-xs); }
 .cart-error { color: var(--feedback-error); margin-top: var(--space-4); }
 .cart-empty { display: grid; justify-items: start; gap: var(--space-4); padding: var(--space-12) 0; }

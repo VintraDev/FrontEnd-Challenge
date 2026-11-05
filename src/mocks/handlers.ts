@@ -4,10 +4,19 @@ import Decimal from 'decimal.js'
 import { catalog } from './fixtures/catalog'
 import { editionsFor } from './fixtures/editions'
 import { cartHandlers } from './cart-handlers'
+import { authHandlers, resetAuth } from './auth-handlers'
+import { resetCarts } from './db/cart'
+import { receiptPreview } from './fixtures/receipt-preview'
 
 const socket = ws.link('/')
 export const handlers = [
+  http.post('/api/__test/reset', async () => {
+    try { await resetAuth(); await resetCarts(); return new HttpResponse(null, { status: 204 }) }
+    catch { return HttpResponse.json({ error: { code: 'STORE_ERROR', message: 'Não foi possível restaurar o cenário.' } }, { status: 500 }) }
+  }),
+  ...authHandlers,
   ...cartHandlers,
+  http.get('/api/orders/preview', () => HttpResponse.json(receiptPreview)),
   http.get('/api/nfts', ({ request }) => {
     const params = new URL(request.url).searchParams
     const q = (params.get('q') ?? '').trim().toLocaleLowerCase()

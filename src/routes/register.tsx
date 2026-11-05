@@ -1,3 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router'
-export const Route = createFileRoute('/register')({ component: Page })
-function Page() { return <><h1 className="text-2xl font-bold">Cadastro</h1><p className="mt-3">Esta funcionalidade ainda não foi implementada.</p></> }
+import { RegisterPage } from '@/features/auth/register-page'
+export const Route = createFileRoute('/register')({ validateSearch: (search: Record<string, unknown>) => ({ redirect: typeof search.redirect === 'string' ? search.redirect : undefined }), component: Page })
+function Page() { const { redirect } = Route.useSearch(); return <RegisterPage redirect={redirect} /> }

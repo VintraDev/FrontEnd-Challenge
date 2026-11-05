@@ -15,7 +15,7 @@ for (const width of [320, 390, 414]) {
     await page.getByLabel('Código promocional').fill('KURIO10')
     await page.getByRole('button', { name: 'Aplicar', exact: true }).click()
     await expect(page.getByText('2.158 ETH')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Conectar e finalizar' })).toBeDisabled()
+    await expect(page.getByRole('link', { name: 'Revisar pagamento' })).toBeVisible()
     await page.getByRole('button', { name: 'Remover Emerald Ape #042' }).click()
     await expect(page.getByRole('heading', { name: 'Seu carrinho está vazio' })).toBeVisible()
     await page.getByRole('link', { name: 'Voltar ao catálogo' }).click()

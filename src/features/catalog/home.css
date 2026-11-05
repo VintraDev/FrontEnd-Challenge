@@ -5,7 +5,7 @@
 .home-nav a, .home-nav span { color: var(--text-primary); text-decoration: none; }
 .home-nav .active { color: var(--action-primary); font-weight: 700; }
 .home-nav span { color: var(--text-secondary); }
-.home-actions a { color: var(--text-primary); }
+.home-actions a:not(.ds-button) { color: var(--text-primary); }
 .home-actions .ds-button { gap: var(--space-2); }
 .hero { display: grid; grid-template-columns: 1fr 450px; align-items: center; gap: var(--space-12); margin-top: var(--space-8); background: var(--bg-surface); border-radius: var(--radius-xl); overflow: hidden; }
 .hero-copy { padding: var(--space-8) var(--space-8) var(--space-8) var(--space-12); }
@@ -56,33 +56,14 @@
 .journal-grid img { width: 100%; aspect-ratio: 1.5; object-fit: cover; }
 .journal-grid h3 { font-weight: 700; }
 .journal-grid span { color: var(--text-secondary); display: inline-flex; gap: var(--space-2); align-items: center; margin-top: var(--space-4); font-size: var(--font-size-xs); }
-.home-footer { margin-top: var(--space-section); padding: var(--space-8); background: var(--bg-surface); color: var(--text-secondary); }
-.home-footer strong { color: var(--text-primary); }
-.home-footer p { margin-top: var(--space-3); font-size: var(--font-size-sm); }
 @media (min-width: 1280px) { .home-shell { padding-inline: 120px; } }
 @media (max-width: 1000px) { .home-nav { gap: var(--space-4); } .hero { grid-template-columns: 1fr 40%; } .catalog-layout { grid-template-columns: 240px minmax(0, 1fr); gap: var(--space-6); } .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .catalog-toolbar, .catalog-controls { flex-wrap: wrap; } }
-@media (max-width: 700px) { .home-nav { display: none; } .home-actions { gap: var(--space-4); } .hero { grid-template-columns: 1fr; } .hero img { height: 320px; } .hero-copy { padding: var(--space-6); } .catalog-layout { grid-template-columns: 1fr; } .featured { display: none; } .filters fieldset { grid-template-columns: repeat(2, minmax(0, 1fr)); } .promos, .journal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .promos article { grid-template-columns: 1fr; } }
+@media (max-width: 700px) { .home-nav { display: none; } .home-actions { gap: var(--space-4); } .hero { grid-template-columns: 1fr; } .hero img { height: 320px; } .hero-copy { padding: var(--space-6); } .catalog-layout { grid-template-columns: 1fr; } .featured { display: none; } .filters fieldset { grid-template-columns: repeat(2, minmax(0, 1fr)); } .promos, .journal-grid { grid-template-columns: minmax(0, 1fr); } .promos article { grid-template-columns: 1fr; } }
 .price-filter { display: grid; gap: var(--space-3); margin-bottom: var(--space-8); }
 .price-filter label { color: var(--text-secondary); font-size: var(--font-size-sm); }
 .price-filter input { margin-top: var(--space-1); }
 .price-filter .ds-button { justify-self: start; }
 .mobile-search, .mobile-bottom-nav, .mobile-hero-title, .mobile-hero-copy, .mobile-catalog-tabs { display: none; }
-.home-footer { padding: 0; background: transparent; }
-.footer-benefits { display: grid; grid-template-columns: repeat(3, 1fr) 1.3fr; background: var(--bg-surface); padding: var(--space-8); }
-.footer-benefits section { padding: 0 var(--space-4); border-right: var(--border-width-default) solid var(--action-primary-hover); }
-.footer-benefits section:last-child { border: 0; }
-.footer-icon { display: grid; place-items: center; width: 4rem; height: 4rem; border-radius: 50%; background: var(--action-primary-hover); color: var(--bg-canvas); margin-bottom: var(--space-4); }
-.footer-benefits h2, .footer-links h2 { color: var(--text-primary); font-size: var(--font-size-md); font-weight: 700; }
-.footer-benefits p, .footer-links p { font-size: var(--font-size-xs); line-height: var(--line-height-body); }
-.footer-newsletter { display: flex; margin-top: var(--space-4); }
-.footer-newsletter .ds-button { min-height: 0; }
-.footer-contact { display: grid; grid-template-columns: repeat(4, 1fr); align-items: center; gap: var(--space-4); padding: var(--space-8); background: var(--border-default); color: var(--text-primary); font-size: var(--font-size-sm); }
-.footer-links { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-8); background: var(--bg-surface); padding: var(--space-8); }
-.footer-links section { display: flex; flex-direction: column; gap: var(--space-2); }
-.footer-links h2 { margin-bottom: var(--space-2); }
-.footer-links a, .footer-links span { color: var(--text-primary); font-size: var(--font-size-sm); }
-.footer-links span { color: var(--text-secondary); }
-.footer-copyright { text-align: center; padding: var(--space-4); }
 @media (max-width: 700px) {
   .home-shell { padding: var(--space-8) var(--space-6) calc(126px + env(safe-area-inset-bottom)); }
   .home-header { display: none; }
@@ -117,9 +98,6 @@
   .nft-card h3 { font-size: var(--font-size-sm); }
   .nft-card p { font-size: var(--font-size-md); }
   .pagination { margin-top: var(--space-16); }
-  .footer-benefits, .footer-links { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); padding: var(--space-6); }
-  .footer-benefits section { border: 0; padding: 0; }
-  .footer-contact { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: var(--space-6); }
   .mobile-bottom-nav { display: block; position: fixed; z-index: 40; left: 0; bottom: 0; width: 100%; height: calc(126px + env(safe-area-inset-bottom)); pointer-events: none; }
   .mobile-bottom-shape { position: absolute; bottom: 0; width: 100%; height: calc(95px + env(safe-area-inset-bottom)); fill: var(--bg-surface); filter: drop-shadow(0 -10px 26px color-mix(in srgb, var(--bg-canvas) 45%, transparent)); }
   .mobile-bottom-items { position: absolute; inset: 0 0 env(safe-area-inset-bottom); display: grid; grid-template-columns: repeat(5, 1fr); align-items: end; }
@@ -128,3 +106,44 @@
   .mobile-bottom-items button:disabled { opacity: 1; cursor: not-allowed; }
   .mobile-bottom-items .mobile-bottom-center { align-self: start; justify-self: center; width: 65px; height: 65px; border-radius: 50%; background: linear-gradient(to bottom, color-mix(in srgb, var(--action-primary-hover) 40%, transparent), var(--action-primary-hover)); color: var(--text-primary); }
 }
+
+/* Feedback apenas para destinos disponíveis. */
+.nft-card-link { display: block; color: inherit; text-decoration: none; }
+.nft-image-clip, .related-image { display: block; overflow: hidden; border-radius: var(--radius-lg); }
+.promos article, .journal-grid [data-slot="card"], .featured { position: relative; }
+.card-overlay { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; cursor: pointer; border-radius: inherit; }
+.nft-image img, .detail-related-grid img, .cart-related-grid img { transition: transform var(--motion-fast) var(--motion-ease); }
+@media (hover: hover) {
+  .home-nav a:hover, .home-logo:hover, .home-actions a:not(.ds-button):hover, .cart-continue:hover, .coupon-applied button:hover, .checkout-coupon-link:hover { color: var(--action-primary); }
+  .home-actions .ds-button:hover { color: var(--button-primary-text); }
+  .nft-card-link:hover img, .detail-related-grid a:hover img, .cart-related-grid a:hover img { transform: scale(var(--image-hover-scale)); }
+  .nft-card-link:hover h3, .detail-related-grid a:hover h3, .cart-related-grid a:hover h3 { color: var(--action-primary); }
+  .filter-option:hover { color: var(--text-primary); }
+}
+@media (hover: hover) and (min-width: 701px) {
+  .hero-link:hover { background: var(--button-primary-hover-bg); }
+}
+@media (hover: hover) and (max-width: 700px) {
+  .hero-link:hover { color: var(--text-primary); }
+  .mobile-bottom-items a:hover { color: var(--action-primary); }
+  .mobile-bottom-items .mobile-bottom-center:hover { color: var(--button-primary-text); }
+}
+
+.nft-card-link:focus-visible img, .detail-related-grid a:focus-visible img, .cart-related-grid a:focus-visible img { transform: scale(var(--image-hover-scale)); }
+@media (hover: hover) { .card-overlay:hover { background: color-mix(in srgb, var(--action-primary) 6%, transparent); } }
+@media (prefers-reduced-motion: reduce) { .nft-card-link:hover img, .nft-card-link:focus-visible img, .detail-related-grid a:hover img, .detail-related-grid a:focus-visible img, .cart-related-grid a:hover img, .cart-related-grid a:focus-visible img { transform: none; } }
+@media (max-width: 700px) {
+  .mobile-bottom-items a, .mobile-bottom-items button { transition: color var(--motion-fast) var(--motion-ease), transform var(--motion-fast) var(--motion-ease); }
+  .mobile-bottom-items a:active, .mobile-bottom-items button:not(:disabled):active { transform: scale(var(--press-scale)); }
+  .mobile-bottom-items button[aria-expanded='true'] { color: var(--action-primary); }
+  .mobile-bottom-items .mobile-bottom-center[aria-current='location'] { box-shadow: 0 0 0 var(--focus-ring-width) var(--focus-ring); }
+  .mobile-cart-link { position: relative; }
+  .mobile-cart-count { position: absolute; top: var(--space-2); left: calc(50% + var(--space-1)); display: grid; place-items: center; min-width: 20px; height: 20px; padding: 0 var(--space-1); border-radius: var(--radius-pill); background: var(--action-primary); color: var(--button-primary-text); font-size: var(--font-size-xs); font-weight: 700; }
+  .mobile-account-popover { z-index: 60; display: grid; gap: var(--space-2); width: min(280px, calc(100vw - var(--space-8))); padding: var(--space-4); border: var(--border-width-default) solid var(--border-default); border-radius: var(--radius-md); background: var(--bg-surface-raised); color: var(--text-primary); overflow-wrap: anywhere; font-size: var(--font-size-sm); }
+  .mobile-account-popover > span { color: var(--text-secondary); font-size: var(--font-size-xs); }
+  .mobile-account-popover button { display: flex; align-items: center; gap: var(--space-2); min-height: 44px; margin-top: var(--space-2); color: var(--action-primary); cursor: pointer; text-align: left; }
+  .mobile-account-popover button:disabled { color: var(--text-secondary); cursor: not-allowed; }
+  .mobile-account-popover p { color: var(--feedback-error); font-size: var(--font-size-xs); }
+}
+@media (hover: hover) and (max-width: 700px) { .mobile-bottom-items button:not(:disabled):hover { color: var(--action-primary); } }
+@media (prefers-reduced-motion: reduce) { .mobile-bottom-items a:active, .mobile-bottom-items button:not(:disabled):active { transform: none; } }
