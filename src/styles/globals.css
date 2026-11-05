@@ -13,6 +13,14 @@
   --color-primary-foreground: var(--button-primary-text);
   --color-border: var(--border-default);
   --color-ring: var(--focus-ring);
+  --color-input: var(--border-default);
+  --color-card: var(--bg-surface);
+  --color-card-foreground: var(--text-primary);
+  --color-popover: var(--bg-surface);
+  --color-popover-foreground: var(--text-primary);
+  --color-accent: var(--bg-surface-raised);
+  --color-accent-foreground: var(--text-primary);
+  --color-destructive: var(--feedback-error);
   --font-sans: var(--font-mono);
   --spacing: var(--space-1);
   --text-xs: var(--font-size-xs);

@@ -1,0 +1,31 @@
+import { expect, test } from '@playwright/test'
+
+test('home mobile oferece busca, filtros acessíveis e navegação inferior', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+  await expect(page.getByRole('heading', { name: 'SEJA DONO DA CULTURA DIGITAL' })).toBeVisible()
+  const nav = page.getByRole('navigation', { name: 'Navegação inferior' })
+  await expect(nav).toBeVisible()
+  await expect(nav.getByRole('link', { name: 'Início' })).toHaveAttribute('aria-current', 'page')
+  await expect(nav.getByRole('button', { name: 'Favoritos indisponíveis' })).toBeDisabled()
+  await page.getByRole('button', { name: 'Abrir filtros' }).click()
+  const sheet = page.getByRole('dialog', { name: 'Filtros' })
+  await expect(sheet).toBeVisible()
+  await sheet.getByRole('checkbox', { name: 'Arte digital' }).check()
+  await expect(page).toHaveURL(/categories=/)
+  await page.keyboard.press('Escape')
+  await expect(sheet).not.toBeVisible()
+  await expect(page.getByRole('button', { name: 'Abrir filtros' })).toBeFocused()
+  await expect(page.getByText('3 resultados')).toBeVisible()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+})
+
+test('footer desktop contém as seções da referência', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+  const footer = page.locator('footer')
+  await expect(footer.getByRole('heading', { name: 'Segurança da carteira' })).toBeVisible()
+  await expect(footer.getByRole('heading', { name: 'Central de ajuda' })).toBeVisible()
+  await expect(footer.getByRole('button', { name: 'Enviar' })).toBeDisabled()
+  await expect(footer.getByText('© 2026 Kurio. Propriedade digital para todos.')).toBeVisible()
+})

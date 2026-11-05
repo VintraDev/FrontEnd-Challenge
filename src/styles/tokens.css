@@ -35,6 +35,7 @@
   --space-8: 2rem;
   --space-12: 3rem;
   --space-16: 4rem;
+  --space-section: 6rem; /* Espaçamento de seções do frame desktop. */
   --radius-sm: 0.25rem;
   --radius-md: 0.5rem;
   --radius-lg: 1rem;

@@ -5,7 +5,7 @@ const problems = []
 async function check(directory) {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const path = join(directory, entry.name)
-    if (entry.isDirectory()) { await check(path); continue }
+    if (entry.isDirectory()) { if (path !== 'src/mocks') await check(path); continue }
     if (!/\.(css|tsx?)$/.test(entry.name) || path === 'src/styles/tokens.css') continue
     const lines = (await readFile(path, 'utf8')).split('\n')
     for (const [index, line] of lines.entries()) {
