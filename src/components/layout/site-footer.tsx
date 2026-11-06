@@ -29,9 +29,6 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="footer-benefits">
         <section>
-          <UnavailableAction title="Segurança da carteira" className="card-overlay">
-            <span className="sr-only">Saiba mais sobre segurança da carteira</span>
-          </UnavailableAction>
           <span className="footer-icon">
             <ShieldCheck />
           </span>
@@ -39,9 +36,6 @@ export function SiteFooter() {
           <p>Proteja sua carteira e mantenha seus ativos verificados com confiança.</p>
         </section>
         <section>
-          <UnavailableAction title="Criadores em destaque" className="card-overlay">
-            <span className="sr-only">Saiba mais sobre criadores em destaque</span>
-          </UnavailableAction>
           <span className="footer-icon">
             <Users />
           </span>
@@ -49,9 +43,6 @@ export function SiteFooter() {
           <p>Conheça artistas, estúdios e comunidades que moldam a cultura digital na Kurio.</p>
         </section>
         <section>
-          <UnavailableAction title="Alertas de lançamentos" className="card-overlay">
-            <span className="sr-only">Saiba mais sobre alertas de lançamentos</span>
-          </UnavailableAction>
           <span className="footer-icon">
             <Bell />
           </span>
@@ -61,7 +52,7 @@ export function SiteFooter() {
         <section>
           <h2>Antecipe-se ao próximo lançamento</h2>
           <div className="footer-newsletter">
-            <Input aria-label="Seu e-mail" placeholder="Digite seu e-mail..." disabled />
+            <Input aria-label="Seu e-mail" placeholder="Digite seu e-mail..." />
             <Button disabled>Enviar</Button>
           </div>
           <p>

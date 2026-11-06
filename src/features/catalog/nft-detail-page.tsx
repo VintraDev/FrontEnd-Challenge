@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { SiteHeader } from './components/site-header';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { addItem } from '@/features/cart/api';
+import { useSession } from '@/features/auth/session';
 import { FavoriteButton } from '@/features/favorites/favorite-button';
 import { getCatalog, getNft } from './api';
 import type { NftDetail } from '@/contracts/catalog';
@@ -76,6 +77,9 @@ export function NftDetailPage({ nftId }: { nftId: string }) {
   );
 }
 function DetailContent({ nft }: { nft: NftDetail }) {
+  const session = useSession();
+  const gallery = Array.from(new Set([nft.image, ...nft.images].filter(Boolean)));
+  const [selectedImage, setSelectedImage] = useState(gallery[0]);
   const [editionId, setEditionId] = useState(
     () => nft.editions.find((edition) => edition.available > 0)?.id ?? nft.editions[0].id,
   );
@@ -84,7 +88,9 @@ function DetailContent({ nft }: { nft: NftDetail }) {
   const add = useMutation({
     mutationFn: addItem,
     onSuccess: async () => {
-      await client.invalidateQueries({ queryKey: queryKeys.cart('guest') });
+      await client.invalidateQueries({
+        queryKey: queryKeys.cart(session.data?.user.id ?? 'guest'),
+      });
     },
   });
   const edition = nft.editions.find((item) => item.id === editionId) ?? nft.editions[0];
@@ -96,11 +102,21 @@ function DetailContent({ nft }: { nft: NftDetail }) {
     <>
       <section className="nft-detail">
         <div className="detail-gallery">
-          <div className="detail-thumbnail">
-            <img src={nft.image} alt="" />
+          <div className="detail-thumbnail" role="group" aria-label={`Galeria de ${nft.title}`}>
+            {gallery.map((image, index) => (
+              <button
+                key={image}
+                type="button"
+                aria-label={`Mostrar imagem ${index + 1} de ${nft.title}`}
+                aria-pressed={selectedImage === image}
+                onClick={() => setSelectedImage(image)}
+              >
+                <img src={image} alt="" />
+              </button>
+            ))}
           </div>
           <div className="detail-image">
-            <img src={nft.image} alt={`Arte de ${nft.title}`} />
+            <img src={selectedImage} alt={`Arte de ${nft.title}`} />
           </div>
         </div>
         <div className="detail-info">

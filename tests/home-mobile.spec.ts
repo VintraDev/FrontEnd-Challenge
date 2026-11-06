@@ -25,6 +25,16 @@ test('footer desktop contém as seções da referência', async ({ page }) => {
   await page.goto('/');
   const footer = page.locator('footer');
   await expect(footer.getByRole('heading', { name: 'Segurança da carteira' })).toBeVisible();
+  const benefits = footer.locator('.footer-benefits');
+  await expect(
+    benefits.getByRole('button', { name: 'Saiba mais sobre segurança da carteira' }),
+  ).toHaveCount(0);
+  await expect(
+    benefits.getByRole('button', { name: 'Saiba mais sobre criadores em destaque' }),
+  ).toHaveCount(0);
+  await expect(
+    benefits.getByRole('button', { name: 'Saiba mais sobre alertas de lançamentos' }),
+  ).toHaveCount(0);
   await expect(footer.getByRole('heading', { name: 'Central de ajuda' })).toBeVisible();
   await expect(footer.getByRole('button', { name: 'Enviar' })).toBeDisabled();
   await expect(footer.getByText('© 2026 Kurio. Propriedade digital para todos.')).toBeVisible();

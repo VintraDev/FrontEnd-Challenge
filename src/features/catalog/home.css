@@ -45,10 +45,69 @@
   grid-template-columns: 1fr 450px;
   align-items: center;
   gap: var(--space-12);
-  margin-top: var(--space-8);
   background: var(--bg-surface);
   border-radius: var(--radius-xl);
   overflow: hidden;
+}
+.hero-carousel {
+  margin-top: var(--space-8);
+}
+.hero-carousel .hero {
+  margin-top: 0;
+}
+.hero-carousel [data-slot='carousel-content'] > .hero-carousel-content {
+  margin-left: 0;
+}
+.hero-carousel-item {
+  padding-left: 0;
+}
+.hero-carousel-indicators {
+  position: absolute;
+  z-index: 1;
+  bottom: var(--space-8);
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  transform: translateX(-50%);
+}
+.hero-carousel-indicator {
+  width: var(--space-2);
+  height: var(--space-2);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--action-primary-hover);
+  cursor: pointer;
+}
+.hero-carousel-indicator[aria-current='true'] {
+  background: var(--text-primary);
+}
+.hero-carousel-indicator:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+.hero-carousel-empty {
+  margin-top: var(--space-8);
+}
+.hero-carousel-heading-skeleton {
+  width: min(28rem, 100%);
+  height: var(--space-16);
+}
+.hero-carousel-copy-skeleton {
+  width: min(34rem, 100%);
+  height: var(--space-12);
+  margin-top: var(--space-4);
+}
+.hero-carousel-action-skeleton {
+  width: 8.75rem;
+  height: var(--space-12);
+  margin-top: var(--space-8);
+}
+.hero-carousel-image-skeleton {
+  width: 100%;
+  height: 450px;
+  border-radius: var(--radius-xl);
 }
 .hero-copy {
   padding: var(--space-8) var(--space-8) var(--space-8) var(--space-12);
@@ -360,15 +419,71 @@
   gap: var(--space-3);
   margin-bottom: var(--space-8);
 }
-.price-filter label {
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-}
-.price-filter input {
-  margin-top: var(--space-1);
-}
 .price-filter .ds-button {
   justify-self: start;
+}
+.price-range {
+  position: relative;
+  display: grid;
+  align-items: center;
+  min-height: var(--space-6);
+}
+.price-range-track,
+.price-range-selected {
+  grid-area: 1 / 1;
+  height: var(--border-width-focus);
+  border-radius: var(--radius-pill);
+}
+.price-range-track {
+  background: var(--border-default);
+}
+.price-range-selected {
+  margin-left: var(--price-range-start);
+  margin-right: var(--price-range-end);
+  background: var(--action-primary);
+}
+.price-range input {
+  grid-area: 1 / 1;
+  width: 100%;
+  height: var(--space-6);
+  margin: 0;
+  appearance: none;
+  pointer-events: none;
+  background: transparent;
+}
+.price-range input::-webkit-slider-thumb {
+  width: var(--space-4);
+  height: var(--space-4);
+  appearance: none;
+  pointer-events: auto;
+  cursor: grab;
+  border: var(--border-width-focus) solid var(--bg-canvas);
+  border-radius: 50%;
+  background: var(--action-primary);
+}
+.price-range input::-moz-range-thumb {
+  width: var(--space-3);
+  height: var(--space-3);
+  pointer-events: auto;
+  cursor: grab;
+  border: var(--border-width-focus) solid var(--bg-canvas);
+  border-radius: 50%;
+  background: var(--action-primary);
+}
+.price-range input:focus-visible {
+  outline: none;
+}
+.price-range input:focus-visible::-webkit-slider-thumb {
+  outline: var(--border-width-focus) solid var(--focus-ring);
+  outline-offset: var(--space-1);
+}
+.price-range input:focus-visible::-moz-range-thumb {
+  outline: var(--border-width-focus) solid var(--focus-ring);
+  outline-offset: var(--space-1);
+}
+.price-range-output {
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
 }
 .mobile-search,
 .mobile-bottom-nav,
@@ -429,6 +544,19 @@
     margin-top: var(--space-4);
     background: var(--bg-surface-raised);
     border-radius: var(--radius-md);
+  }
+  .hero-carousel,
+  .hero-carousel-empty {
+    margin-top: var(--space-4);
+  }
+  .hero-carousel-indicators {
+    bottom: var(--space-3);
+  }
+  .hero-carousel-image-skeleton {
+    width: calc(100% - var(--space-4));
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: var(--radius-lg);
   }
   .hero-copy {
     padding: var(--space-4);

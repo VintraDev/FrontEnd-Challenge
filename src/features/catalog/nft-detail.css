@@ -17,6 +17,20 @@
   gap: var(--space-6);
   align-items: start;
 }
+.detail-thumbnail button {
+  display: block;
+  padding: 0;
+  cursor: pointer;
+  border: var(--border-width-default) solid transparent;
+  background: transparent;
+}
+.detail-thumbnail button[aria-pressed='true'] {
+  border-color: var(--action-primary);
+}
+.detail-thumbnail button:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
 .detail-thumbnail,
 .detail-image {
   background: var(--bg-surface);

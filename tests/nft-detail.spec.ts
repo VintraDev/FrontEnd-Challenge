@@ -6,6 +6,10 @@ test('detalhe acessa a API, respeita estoque e navega entre NFTs', async ({ page
   await page.goto('/nft/nft-1');
   expect((await response).status()).toBe(200);
   await expect(page.getByRole('heading', { name: 'Emerald Ape #042' })).toBeVisible();
+  await expect(page.getByRole('group', { name: 'Galeria de Emerald Ape #042' })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Mostrar imagem 1 de Emerald Ape #042' }),
+  ).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('button', { name: '1/1 esgotada' })).toBeDisabled();
   await expect(page.getByRole('button', { name: '1/10' })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Aumentar quantidade' }).click();

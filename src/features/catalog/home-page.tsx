@@ -24,6 +24,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { SiteHeader } from './components/site-header';
+import { HeroCarousel } from './components/hero-carousel';
 import { UnavailableAction } from '@/components/feedback/unavailable-action';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { MobileNavigation } from './mobile-navigation';
@@ -56,12 +57,34 @@ const stories = [
   ],
   ['Como proteger sua carteira', 'Proteja sua carteira, seus ativos e sua identidade.'],
 ];
+const featuredSearch = {
+  q: '',
+  categories: '',
+  network: '',
+  minPrice: '',
+  maxPrice: '',
+  sort: 'recent' as const,
+  page: 1,
+};
+const priceRange = { min: 0.02, max: 12.3, step: 0.01 };
+const clampPrice = (value: string, fallback: number) => {
+  if (!value) return fallback;
+  const parsed = Number(value);
+  return Number.isFinite(parsed)
+    ? Math.min(priceRange.max, Math.max(priceRange.min, parsed))
+    : fallback;
+};
+const formatPrice = (value: number) => value.toFixed(2).replace('.', ',');
 export function HomePage() {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const query = useQuery({
     queryKey: queryKeys.catalog(search),
     queryFn: ({ signal }) => getCatalog(search, signal),
+  });
+  const featured = useQuery({
+    queryKey: queryKeys.catalog(featuredSearch),
+    queryFn: ({ signal }) => getCatalog(featuredSearch, signal),
   });
   const selected = search.categories.split(',').filter(Boolean);
   const priceKey = `${search.minPrice}:${search.maxPrice}`;
@@ -72,8 +95,12 @@ export function HomePage() {
   });
   const minPrice = priceDraft.key === priceKey ? priceDraft.min : search.minPrice;
   const maxPrice = priceDraft.key === priceKey ? priceDraft.max : search.maxPrice;
-  const setMinPrice = (min: string) => setPriceDraft({ key: priceKey, min, max: maxPrice });
-  const setMaxPrice = (max: string) => setPriceDraft({ key: priceKey, min: minPrice, max });
+  const minRange = clampPrice(minPrice, priceRange.min);
+  const maxRange = clampPrice(maxPrice, priceRange.max);
+  const setMinPrice = (min: number) =>
+    setPriceDraft({ key: priceKey, min: String(Math.min(min, maxRange)), max: String(maxRange) });
+  const setMaxPrice = (max: number) =>
+    setPriceDraft({ key: priceKey, min: String(minRange), max: String(Math.max(max, minRange)) });
   const update = (patch: Partial<CatalogSearch>) =>
     navigate({ search: { ...search, ...patch }, resetScroll: false });
   const filterContent = (
@@ -104,35 +131,42 @@ export function HomePage() {
         className="price-filter"
         onSubmit={(event) => {
           event.preventDefault();
-          if (
-            (!minPrice || /^\d+(\.\d+)?$/.test(minPrice)) &&
-            (!maxPrice || /^\d+(\.\d+)?$/.test(maxPrice))
-          )
-            update({ minPrice, maxPrice, page: 1 });
+          update({ minPrice: String(minRange), maxPrice: String(maxRange), page: 1 });
         }}
       >
-        <label>
-          Mínimo (ETH)
-          <Input
-            inputMode="decimal"
-            pattern="[0-9]+([.][0-9]+)?"
-            title="Use números e ponto decimal"
-            value={minPrice}
-            onChange={(event) => setMinPrice(event.target.value)}
-            placeholder="0.00"
+        <div
+          className="price-range"
+          style={
+            {
+              '--price-range-start': `${((minRange - priceRange.min) / (priceRange.max - priceRange.min)) * 100}%`,
+              '--price-range-end': `${100 - ((maxRange - priceRange.min) / (priceRange.max - priceRange.min)) * 100}%`,
+            } as React.CSSProperties
+          }
+        >
+          <span className="price-range-track" aria-hidden="true" />
+          <span className="price-range-selected" aria-hidden="true" />
+          <input
+            aria-label="Preço mínimo"
+            type="range"
+            min={priceRange.min}
+            max={priceRange.max}
+            step={priceRange.step}
+            value={minRange}
+            onChange={(event) => setMinPrice(Number(event.target.value))}
           />
-        </label>
-        <label>
-          Máximo (ETH)
-          <Input
-            inputMode="decimal"
-            pattern="[0-9]+([.][0-9]+)?"
-            title="Use números e ponto decimal"
-            value={maxPrice}
-            onChange={(event) => setMaxPrice(event.target.value)}
-            placeholder="12.30"
+          <input
+            aria-label="Preço máximo"
+            type="range"
+            min={priceRange.min}
+            max={priceRange.max}
+            step={priceRange.step}
+            value={maxRange}
+            onChange={(event) => setMaxPrice(Number(event.target.value))}
           />
-        </label>
+        </div>
+        <output className="price-range-output" aria-live="polite">
+          Preço: {formatPrice(minRange)} - {formatPrice(maxRange)} ETH
+        </output>
         <Button type="submit">Aplicar</Button>
       </form>
       <h2>Rede</h2>
@@ -153,8 +187,7 @@ export function HomePage() {
       <Button
         variant="outline"
         onClick={() => {
-          setMinPrice('');
-          setMaxPrice('');
+          setPriceDraft({ key: ':', min: '', max: '' });
           update({ q: '', categories: '', network: '', minPrice: '', maxPrice: '', page: 1 });
         }}
       >
@@ -189,33 +222,10 @@ export function HomePage() {
             </SheetContent>
           </Sheet>
         </div>
-        <section className="hero">
-          <div className="hero-copy">
-            <p className="eyebrow">Bem-vindo à Kurio</p>
-            <h1 className="desktop-hero-title">
-              SEJA DONO DO FUTURO
-              <br /> DA ARTE DIGITAL
-            </h1>
-            <h1 className="mobile-hero-title">
-              SEJA DONO DA
-              <br /> CULTURA DIGITAL
-            </h1>
-            <p className="desktop-hero-copy">
-              Descubra NFTs selecionados de criadores emergentes e consagrados. Colecione arte
-              digital rara, apoie artistas e tenha uma parte da cultura da internet.
-            </p>
-            <p className="mobile-hero-copy">
-              Descubra NFTs selecionados de criadores do mundo todo.
-            </p>
-            <a className="hero-link" href="#catalogo">
-              EXPLORAR
-            </a>
-          </div>
-          <img
-            src="/assets/nfts/image-import-1.png"
-            alt="Arte digital de um macaco com roupa verde"
-          />
-        </section>
+        <HeroCarousel
+          products={featured.data?.items.slice(0, 3) ?? []}
+          isLoading={featured.isPending}
+        />
         <section id="catalogo" className="catalog-layout" aria-label="Catálogo de NFTs">
           <aside className="catalog-sidebar">
             {filterContent}
@@ -290,8 +300,7 @@ export function HomePage() {
                 <Button
                   variant="outline"
                   onClick={() => {
-                    setMinPrice('');
-                    setMaxPrice('');
+                    setPriceDraft({ key: ':', min: '', max: '' });
                     update({
                       q: '',
                       categories: '',
