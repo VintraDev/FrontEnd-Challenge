@@ -25,6 +25,10 @@ for (const width of [390, 1440]) {
 
 test('pedido real não apresenta confirmação sem fluxo implementado', async ({ page }) => {
   await page.goto('/orders/order-123');
+  await expect(page).toHaveURL(/\/login\?redirect=/);
+  await page.getByLabel('E-mail').fill('ana@kurio.test');
+  await page.getByLabel('Senha', { exact: true }).fill('KurioDemo123!');
+  await page.getByRole('dialog').getByRole('button', { name: 'Entrar', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Pedido indisponível' })).toBeVisible();
   await expect(page.getByText('Nenhuma compra foi realizada.')).toHaveCount(0);
   await expect(page.getByText('Detalhes da transação')).toHaveCount(0);

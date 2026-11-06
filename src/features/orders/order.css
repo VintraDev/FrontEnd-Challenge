@@ -144,6 +144,30 @@
   margin-top: var(--space-4);
   color: var(--action-primary);
 }
+.order-status-banner {
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: var(--border-width-default) solid var(--border-accent);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: var(--font-size-xs);
+}
+.order-status-banner--declined {
+  border-color: var(--feedback-error);
+  color: var(--feedback-error);
+}
+.order-idempotency-key {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  margin-bottom: var(--space-4);
+}
+.order-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
 .order-state {
   padding: var(--space-8);
   display: grid;

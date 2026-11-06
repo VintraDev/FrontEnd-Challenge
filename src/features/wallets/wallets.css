@@ -35,8 +35,52 @@
   margin-top: var(--space-2);
   color: var(--feedback-error);
 }
-.wallets-form > .ds-button {
+.wallets-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
   margin-top: var(--space-6);
+}
+.wallets-connection {
+  margin-top: var(--space-6);
+  padding: var(--space-4);
+  border: var(--border-width-default) solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  display: grid;
+  gap: var(--space-3);
+}
+.wallets-connection-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  font-size: var(--font-size-sm);
+}
+.wallets-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  border: var(--border-width-default) solid var(--border-default);
+  background: var(--bg-surface-raised);
+  color: var(--text-secondary);
+}
+.wallets-status-badge--connected {
+  border-color: var(--feedback-success);
+  color: var(--feedback-success);
+}
+.wallets-status-badge--rejected {
+  border-color: var(--feedback-error);
+  color: var(--feedback-error);
+}
+.wallets-connection-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
 }
 .wallets-secondary {
   margin-top: var(--space-12);

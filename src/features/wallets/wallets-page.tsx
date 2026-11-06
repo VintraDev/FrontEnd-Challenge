@@ -15,9 +15,14 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SiteHeader } from '@/features/catalog/components/site-header';
-import { walletInputSchema, type WalletInput, type WalletRecord } from '@/contracts/wallets';
+import {
+  walletInputSchema,
+  type WalletConnectionRequest,
+  type WalletInput,
+  type WalletRecord,
+} from '@/contracts/wallets';
 import { queryKeys } from '@/lib/query-keys';
-import { getWallets, saveWallet } from './api';
+import { deleteWallet, getWallets, saveWallet, updateWalletConnection } from './api';
 import '@/features/catalog/home.css';
 import '@/features/profile/profile.css';
 import './wallets.css';
@@ -75,13 +80,19 @@ export function WalletsPage({ userId }: { userId: string }) {
               <h1>Carteira principal</h1>
             </div>
             <p className="wallets-description">
-              Cadastre carteiras fictícias. A seleção no pagamento estará disponível em uma próxima
-              etapa.
+              Estas carteiras ficam disponíveis no pagamento e para receber NFTs comprados.
             </p>
             <p className="wallets-description">
-              Cadastro simulado. Nunca informe chaves privadas ou frases de recuperação.
+              Cadastro e conexão simulados, sem vínculo com blockchain ou gateway real. Nunca
+              informe chaves privadas ou frases de recuperação.
             </p>
-            <WalletForm userId={userId} initial={primary} isPrimary />
+            <WalletForm
+              userId={userId}
+              initial={primary}
+              isPrimary
+              onDeleted={() => setCopyPrimary(false)}
+            />
+            {primary && <WalletConnectionControls userId={userId} wallet={primary} />}
             <section className="wallets-secondary">
               <div className="wallets-secondary-heading">
                 <h2>Carteira secundária</h2>
@@ -105,20 +116,27 @@ export function WalletsPage({ userId }: { userId: string }) {
                 </div>
               </div>
               {secondary || showSecondary ? (
-                <WalletForm
-                  key={String(copyPrimary)}
-                  userId={userId}
-                  initial={
-                    copyPrimary && primary
-                      ? {
-                          ...primary,
-                          id: secondary?.id ?? primary.id,
-                          isPrimary: secondary ? false : true,
-                        }
-                      : secondary
-                  }
-                  isPrimary={false}
-                />
+                <>
+                  <WalletForm
+                    key={String(copyPrimary)}
+                    userId={userId}
+                    initial={
+                      copyPrimary && primary
+                        ? {
+                            ...primary,
+                            id: secondary?.id ?? primary.id,
+                            isPrimary: secondary ? false : true,
+                          }
+                        : secondary
+                    }
+                    isPrimary={false}
+                    onDeleted={() => {
+                      setShowSecondary(false);
+                      setCopyPrimary(false);
+                    }}
+                  />
+                  {secondary && <WalletConnectionControls userId={userId} wallet={secondary} />}
+                </>
               ) : (
                 <p className="wallets-description">
                   Você ainda não adicionou uma carteira secundária.
@@ -132,17 +150,137 @@ export function WalletsPage({ userId }: { userId: string }) {
   );
 }
 
+function WalletConnectionControls({ userId, wallet }: { userId: string; wallet: WalletRecord }) {
+  const client = useQueryClient();
+  const connection = useMutation({
+    mutationFn: (input: WalletConnectionRequest) => updateWalletConnection(wallet.id, input),
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: queryKeys.wallets(userId) });
+    },
+  });
+  const statusLabel =
+    connection.isPending && connection.variables?.action === 'connect'
+      ? 'Conectando...'
+      : wallet.connectionStatus === 'connected'
+        ? 'Conectada'
+        : wallet.connectionStatus === 'rejected'
+          ? 'Conexão recusada'
+          : 'Desconectada';
+  return (
+    <section
+      className="wallets-connection"
+      aria-label={
+        wallet.isPrimary ? 'Conexão da carteira principal' : 'Conexão da carteira secundária'
+      }
+    >
+      <div className="wallets-connection-info">
+        <strong>
+          {wallet.label} ({wallet.network} · {wallet.walletType})
+        </strong>
+        <span
+          className={`wallets-status-badge wallets-status-badge--${wallet.connectionStatus}`}
+          role="status"
+        >
+          {statusLabel}
+        </span>
+      </div>
+      {wallet.connectionStatus === 'rejected' && (
+        <p role="alert" className="wallets-error">
+          Conexão recusada pela carteira simulada. A confirmação de pagamento fica bloqueada até
+          conectar uma carteira.
+        </p>
+      )}
+      {connection.isError && (
+        <p role="alert" className="wallets-error">
+          {axios.isAxiosError(connection.error) &&
+          typeof connection.error.response?.data?.error?.message === 'string'
+            ? connection.error.response.data.error.message
+            : 'Não foi possível atualizar a conexão da carteira.'}
+        </p>
+      )}
+      <div className="wallets-connection-actions">
+        {wallet.connectionStatus === 'disconnected' && (
+          <>
+            <Button
+              type="button"
+              disabled={connection.isPending}
+              onClick={() =>
+                connection.mutate({
+                  action: 'connect',
+                  network: wallet.network,
+                  walletType: wallet.walletType,
+                })
+              }
+            >
+              {connection.isPending ? 'Conectando...' : 'Conectar carteira'}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={connection.isPending}
+              onClick={() =>
+                connection.mutate({
+                  action: 'reject',
+                  network: wallet.network,
+                  walletType: wallet.walletType,
+                })
+              }
+            >
+              Simular recusa
+            </Button>
+          </>
+        )}
+        {wallet.connectionStatus === 'rejected' && (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={connection.isPending}
+            onClick={() =>
+              connection.mutate({
+                action: 'reset',
+                network: wallet.network,
+                walletType: wallet.walletType,
+              })
+            }
+          >
+            Tentar novamente
+          </Button>
+        )}
+        {wallet.connectionStatus === 'connected' && (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={connection.isPending}
+            onClick={() =>
+              connection.mutate({
+                action: 'disconnect',
+                network: wallet.network,
+                walletType: wallet.walletType,
+              })
+            }
+          >
+            Desconectar carteira
+          </Button>
+        )}
+      </div>
+    </section>
+  );
+}
+
 function WalletForm({
   userId,
   initial,
   isPrimary,
+  onDeleted,
 }: {
   userId: string;
   initial?: WalletRecord;
   isPrimary: boolean;
+  onDeleted?: () => void;
 }) {
   const id = useId();
   const client = useQueryClient();
+  const savedWalletId = initial?.isPrimary === isPrimary ? initial.id : undefined;
   const [values, setValues] = useState<WalletInput>(() =>
     initial
       ? {
@@ -162,9 +300,18 @@ function WalletForm({
   );
   const [errors, setErrors] = useState<Errors>({});
   const mutation = useMutation({
-    mutationFn: (input: WalletInput) =>
-      saveWallet(input, initial?.isPrimary === isPrimary ? initial.id : undefined),
+    mutationFn: (input: WalletInput) => saveWallet(input, savedWalletId),
     onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: queryKeys.wallets(userId) });
+    },
+  });
+  const removeMutation = useMutation({
+    mutationFn: (walletId: string) => deleteWallet(walletId),
+    onSuccess: async () => {
+      setValues(blank(isPrimary));
+      setErrors({});
+      mutation.reset();
+      onDeleted?.();
       await client.invalidateQueries({ queryKey: queryKeys.wallets(userId) });
     },
   });
@@ -172,6 +319,7 @@ function WalletForm({
     setValues((current) => ({ ...current, [field]: value }));
     setErrors((current) => ({ ...current, [field]: undefined }));
     mutation.reset();
+    removeMutation.reset();
   };
   const field = (
     name: Field,
@@ -233,6 +381,7 @@ function WalletForm({
       onSubmit={(event) => {
         event.preventDefault();
         mutation.reset();
+        removeMutation.reset();
         const parsed = walletInputSchema.safeParse(values);
         if (!parsed.success) {
           const next: Errors = {};
@@ -257,6 +406,7 @@ function WalletForm({
         {select('walletType', 'Tipo de carteira', 'Selecione uma carteira', [
           'MetaMask',
           'WalletConnect',
+          'Coinbase Wallet',
           'Outra',
         ])}
         {field('referralCode', 'Código de indicação')}
@@ -276,14 +426,37 @@ function WalletForm({
             : 'Não foi possível salvar a carteira.'}
         </p>
       )}
+      {removeMutation.isError && (
+        <p role="alert" className="wallets-error">
+          {axios.isAxiosError(removeMutation.error) &&
+          typeof removeMutation.error.response?.data?.error?.message === 'string'
+            ? removeMutation.error.response.data.error.message
+            : 'Não foi possível remover a carteira.'}
+        </p>
+      )}
       {mutation.isSuccess && (
         <p role="status" className="wallets-success">
           Carteira salva.
         </p>
       )}
-      <Button type="submit" disabled={mutation.isPending}>
-        {mutation.isPending ? 'Salvando...' : 'Salvar carteira'}
-      </Button>
+      <div className="wallets-form-actions">
+        <Button type="submit" disabled={mutation.isPending || removeMutation.isPending}>
+          {mutation.isPending ? 'Salvando...' : 'Salvar carteira'}
+        </Button>
+        {savedWalletId && (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={mutation.isPending || removeMutation.isPending}
+            onClick={() => {
+              mutation.reset();
+              removeMutation.mutate(savedWalletId);
+            }}
+          >
+            {removeMutation.isPending ? 'Removendo...' : 'Remover carteira'}
+          </Button>
+        )}
+      </div>
     </form>
   );
 }

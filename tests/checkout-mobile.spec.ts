@@ -9,9 +9,10 @@ for (const width of [320, 390, 414]) {
     await page.getByRole('button', { name: 'ADICIONAR AO CARRINHO' }).click();
     await page.getByRole('link', { name: 'Ver carrinho' }).click();
     await page.getByRole('link', { name: 'Revisar pagamento' }).click();
-    await page.getByLabel('E-mail').fill('ana@kurio.test');
-    await page.getByLabel('Senha', { exact: true }).fill('KurioDemo123!');
-    await page.getByRole('dialog').getByRole('button', { name: 'Entrar', exact: true }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByLabel('E-mail').fill('ana@kurio.test');
+    await dialog.getByLabel('Senha', { exact: true }).fill('KurioDemo123!');
+    await dialog.getByRole('button', { name: 'Entrar', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Pagamento com carteira' })).toBeVisible();
     await expect(page.getByText('Nenhuma carteira conectada')).toBeVisible();
     await expect(page.getByText('1.206 ETH').first()).toBeVisible();

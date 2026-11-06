@@ -3,6 +3,12 @@ import { orderSchema, walletSchema } from '../src/contracts/checkout';
 import { apiErrorSchema, ethSchema } from '../src/contracts/api';
 import { catalogSchema } from '../src/contracts/catalog';
 import { realtimeEventSchema } from '../src/contracts/events';
+import {
+  isForbiddenWalletSecret,
+  walletConnectionRequestSchema,
+  walletInputSchema,
+  walletRecordSchema,
+} from '../src/contracts/wallets';
 import { queryKeys } from '../src/lib/query-keys';
 
 test('contratos propostos validam valores ETH, quantidades e estados sem alterar o recibo de prévia', () => {
@@ -87,6 +93,54 @@ test('contratos propostos validam valores ETH, quantidades e estados sem alterar
       changedAt: '2026-11-05T12:00:00.000Z',
       editionId: 'ten',
       changes: { priceEth: '0.125' },
+    }).success,
+  ).toBe(true);
+  expect(
+    isForbiddenWalletSecret('0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'),
+  ).toBe(true);
+  expect(
+    isForbiddenWalletSecret(
+      'abandon ability able about above absent absorb abstract absurd abuse access accident',
+    ),
+  ).toBe(true);
+  expect(isForbiddenWalletSecret('0x1111111111111111111111111111111111111111')).toBe(false);
+  expect(
+    walletInputSchema.safeParse({
+      displayName: 'Ana',
+      label: 'Principal',
+      network: 'Ethereum',
+      profileName: 'ana',
+      address: '0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+      secondaryAddress: '',
+      walletType: 'MetaMask',
+      referralCode: 'KURIO',
+      email: 'ana@kurio.test',
+      ens: 'ana.eth',
+      isPrimary: true,
+    }).success,
+  ).toBe(false);
+  expect(
+    walletRecordSchema.parse({
+      id: 'w-1',
+      userId: 'collector-a',
+      displayName: 'Ana',
+      label: 'Principal',
+      network: 'Polygon',
+      profileName: 'ana',
+      address: '0x1111111111111111111111111111111111111111',
+      secondaryAddress: '',
+      walletType: 'Coinbase Wallet',
+      referralCode: 'KURIO',
+      email: 'ana@kurio.test',
+      ens: 'ana.eth',
+      isPrimary: true,
+    }).connectionStatus,
+  ).toBe('disconnected');
+  expect(
+    walletConnectionRequestSchema.safeParse({
+      action: 'connect',
+      network: 'Polygon',
+      walletType: 'WalletConnect',
     }).success,
   ).toBe(true);
 });

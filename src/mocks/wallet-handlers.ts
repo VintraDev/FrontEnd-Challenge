@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw';
-import { walletInputSchema } from '@/contracts/wallets';
+import { walletConnectionRequestSchema, walletInputSchema } from '@/contracts/wallets';
 import { sessionFrom } from './auth-handlers';
-import { readWallets, saveWallet } from './db/wallets';
+import { deleteWallet, readWallets, saveWallet, updateWalletConnection } from './db/wallets';
 import { readScenario } from './scenarios/catalog';
 
 const error = (status: number, code: string, message: string) =>
@@ -50,4 +50,50 @@ export const walletHandlers = [
   http.patch('/api/wallets/:walletId', ({ request, params }) =>
     save(request, String(params.walletId)),
   ),
+  http.delete('/api/wallets/:walletId', async ({ request, params }) => {
+    try {
+      const session = await sessionFrom(request);
+      if (!session) return error(401, 'SESSION_EXPIRED', 'Entre para acessar suas carteiras.');
+      if (readScenario().wallets === 'http-500')
+        return error(500, 'STORE_ERROR', 'Não foi possível remover a carteira.');
+      await deleteWallet(session.user.id, String(params.walletId));
+      return new HttpResponse(null, { status: 204 });
+    } catch (err) {
+      if (err instanceof Error && err.message === 'NOT_FOUND')
+        return error(404, 'NOT_FOUND', 'Carteira não encontrada.');
+      return error(500, 'STORE_ERROR', 'Não foi possível remover a carteira.');
+    }
+  }),
+  http.post('/api/wallets/:walletId/connection', async ({ request, params }) => {
+    try {
+      const session = await sessionFrom(request);
+      if (!session) return error(401, 'SESSION_EXPIRED', 'Entre para acessar suas carteiras.');
+      const input = walletConnectionRequestSchema.safeParse(await request.json());
+      if (!input.success)
+        return HttpResponse.json(
+          {
+            error: {
+              code: 'VALIDATION_ERROR',
+              message: 'Ação de conexão inválida.',
+              fieldErrors: input.error.flatten().fieldErrors,
+            },
+          },
+          { status: 422 },
+        );
+      const scenario = readScenario().wallets;
+      if (scenario === 'http-500')
+        return error(500, 'STORE_ERROR', 'Não foi possível atualizar a conexão da carteira.');
+      const updated = await updateWalletConnection(
+        session.user.id,
+        String(params.walletId),
+        input.data,
+        scenario === 'reject-connection',
+      );
+      return HttpResponse.json(updated);
+    } catch (err) {
+      if (err instanceof Error && err.message === 'NOT_FOUND')
+        return error(404, 'NOT_FOUND', 'Carteira não encontrada.');
+      return error(500, 'STORE_ERROR', 'Não foi possível atualizar a conexão da carteira.');
+    }
+  }),
 ];

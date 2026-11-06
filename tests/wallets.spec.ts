@@ -152,3 +152,80 @@ test('formulário de carteiras funciona em viewport mobile', async ({ page }) =>
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: '/tmp/kurio-wallets-mobile.png', fullPage: true });
 });
+
+test('carteiras simulam conexão, recusa, desconexão, exclusão e bloqueiam segredos reais', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/account/wallets');
+  await login(page, 'ana@kurio.test', 'KurioDemo123!');
+
+  const primary = page.getByRole('form', { name: 'Carteira principal' });
+  await fillWallet(primary, 'Carteira Principal Ana');
+  await primary
+    .getByLabel('Endereço da carteira')
+    .fill('0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef');
+  await primary.getByRole('button', { name: 'Salvar carteira' }).click();
+  await expect(primary).toContainText('Nunca informe chaves privadas ou frases de recuperação');
+
+  const secretRejectedByApi = await page.evaluate(async () => {
+    const token = localStorage.getItem('kurio-demo-session')!;
+    return (
+      await fetch('/api/wallets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          displayName: 'Ana',
+          label: 'Secreta',
+          network: 'Ethereum',
+          profileName: 'ana',
+          address:
+            'abandon ability able about above absent absorb abstract absurd abuse access accident',
+          secondaryAddress: '',
+          walletType: 'MetaMask',
+          referralCode: 'DEMO',
+          email: 'ana@kurio.test',
+          ens: 'ana.eth',
+          isPrimary: true,
+        }),
+      })
+    ).status;
+  });
+  expect(secretRejectedByApi).toBe(422);
+
+  await primary.getByLabel('Endereço da carteira').fill(address);
+  await primary.getByRole('button', { name: 'Salvar carteira' }).click();
+  const primaryConn = page.getByRole('region', { name: 'Conexão da carteira principal' });
+  await expect(primaryConn).toBeVisible();
+  await expect(primaryConn.getByRole('status')).toHaveText('Desconectada');
+
+  await primaryConn.getByRole('button', { name: 'Simular recusa' }).click();
+  await expect(primaryConn.getByRole('status')).toHaveText('Conexão recusada');
+  await expect(primaryConn.getByRole('alert')).toContainText(
+    'Conexão recusada pela carteira simulada',
+  );
+
+  await primaryConn.getByRole('button', { name: 'Tentar novamente' }).click();
+  await expect(primaryConn.getByRole('status')).toHaveText('Desconectada');
+
+  await primaryConn.getByRole('button', { name: 'Conectar carteira' }).click();
+  await expect(primaryConn.getByRole('status')).toHaveText('Conectada');
+  await page.reload();
+  await expect(primaryConn.getByRole('status')).toHaveText('Conectada');
+
+  await primaryConn.getByRole('button', { name: 'Desconectar carteira' }).click();
+  await expect(primaryConn.getByRole('status')).toHaveText('Desconectada');
+
+  await page.getByRole('checkbox', { name: 'Igual à carteira principal' }).check();
+  const secondary = page.getByRole('form', { name: 'Carteira secundária' });
+  await secondary.getByLabel('Apelido da carteira').fill('Reserva Polygon');
+  await secondary.getByRole('combobox', { name: 'Rede', exact: true }).click();
+  await page.getByRole('option', { name: 'Polygon' }).click();
+  await secondary.getByRole('button', { name: 'Salvar carteira' }).click();
+  await expect(page.getByRole('region', { name: 'Conexão da carteira secundária' })).toBeVisible();
+
+  await secondary.getByRole('button', { name: 'Remover carteira' }).click();
+  await expect(page.getByText('Você ainda não adicionou uma carteira secundária.')).toBeVisible();
+  await page.reload();
+  await expect(page.getByText('Você ainda não adicionou uma carteira secundária.')).toBeVisible();
+});

@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { SiteHeader } from '@/features/catalog/components/site-header';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { getCatalog } from '@/features/catalog/api';
+import { useSession } from '@/features/auth/session';
 import '@/features/catalog/home.css';
 import './cart.css';
 import { applyCoupon, getCart, getQuote, removeCoupon, removeItem, updateItem } from './api';
@@ -30,18 +31,21 @@ function message(error: unknown) {
 }
 export function CartPage() {
   const client = useQueryClient();
+  const session = useSession();
+  const scope = session.data?.user.id ?? 'guest';
   const [coupon, setCoupon] = useState('');
   const cart = useQuery({
-    queryKey: queryKeys.cart('guest'),
+    queryKey: queryKeys.cart(scope),
     queryFn: ({ signal }) => getCart(signal),
+    enabled: !session.isPending,
   });
   const related = useQuery({
     queryKey: queryKeys.catalog(homeSearch),
     queryFn: ({ signal }) => getCatalog(homeSearch, signal),
   });
   const quote = useQuery({
-    queryKey: queryKeys.quote('guest', cart.data?.version),
-    queryFn: ({ signal }) => getQuote(cart.data!.version, signal),
+    queryKey: queryKeys.quote(scope, cart.data?.version),
+    queryFn: ({ signal }) => getQuote(cart.data!.version, {}, signal),
     enabled: !!cart.data && cart.data.lines.length > 0,
     retry: false,
   });
@@ -60,13 +64,20 @@ export function CartPage() {
     },
     onSuccess: async () => {
       setCoupon('');
-      await client.invalidateQueries({ queryKey: queryKeys.cart('guest') });
+      await client.invalidateQueries({ queryKey: queryKeys.cart(scope) });
     },
   });
   return (
     <div className="home-shell cart-shell">
       <SiteHeader />
       <main>
+        {session.data &&
+          sessionStorage.getItem(`kurio-cart-merge-warning:${session.data.user.id}`) && (
+            <p role="alert">
+              Não foi possível mesclar seu carrinho visitante. Ele foi preservado; saia da conta
+              para revisá-lo e tente entrar novamente.
+            </p>
+          )}
         <div className="cart-mobile-header">
           <Link to="/" search={homeSearch} aria-label="Voltar ao catálogo">
             <ArrowLeft size={20} />

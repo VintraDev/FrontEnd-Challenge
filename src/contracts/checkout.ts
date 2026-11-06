@@ -53,7 +53,9 @@ export const createOrderRequestSchema = z.object({
   walletId: id,
   network: z.string().trim().min(1).max(40),
   acceptedQuoteVersion: z.string().trim().min(1).max(160),
+  acceptedQuoteHash: z.string().regex(/^[a-f0-9]{64}$/),
 });
+export const idempotencyKeySchema = z.string().uuid();
 export type Order = z.infer<typeof orderSchema>;
 export type QuoteSnapshot = z.infer<typeof quoteSnapshotSchema>;
 export type QuoteRequest = z.output<typeof quoteRequestSchema>;

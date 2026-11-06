@@ -5,6 +5,7 @@ import {
   couponInputSchema,
   guestQuoteRequestSchema,
   quoteSchema,
+  type QuoteRequest,
 } from '@/contracts/cart';
 import { http } from '@/lib/http';
 export async function getCart(signal?: AbortSignal) {
@@ -38,12 +39,18 @@ export async function applyCoupon(code: string) {
 export async function removeCoupon() {
   return cartSchema.parse((await http.delete<unknown>('/cart/coupon')).data);
 }
-export async function getQuote(cartVersion: number, signal: AbortSignal) {
+export async function getQuote(
+  cartVersion: number,
+  context: Omit<QuoteRequest, 'cartVersion'> = {},
+  signal?: AbortSignal,
+) {
   return quoteSchema.parse(
     (
-      await http.post<unknown>('/quotes', guestQuoteRequestSchema.parse({ cartVersion }), {
-        signal,
-      })
+      await http.post<unknown>(
+        '/quotes',
+        guestQuoteRequestSchema.parse({ cartVersion, ...context }),
+        { signal },
+      )
     ).data,
   );
 }
