@@ -13,8 +13,6 @@ import { profileInputSchema, type Profile, type ProfileInput } from '@/contracts
 import { normalizeApiError } from '@/lib/errors';
 import { prepareProfileImage, ProfileImagePreparationError } from '@/lib/profile-image';
 import { changePassword, getProfile, updateProfile, updateProfileEmail } from './api';
-import '@/features/catalog/home.css';
-import './profile.css';
 
 function errorMessage(error: unknown) {
   if (axios.isAxiosError(error)) {
@@ -32,20 +30,20 @@ export function ProfilePage({ userId }: { userId: string }) {
     retry: false,
   });
   return (
-    <div className="home-shell profile-shell">
+    <div className="home-shell profile-shell mx-auto max-w-[1440px] px-16 pt-12 pb-16 max-[700px]:px-4 max-[700px]:pt-6 max-[700px]:pb-12">
       <SiteHeader />
-      <main className="profile-layout">
+      <main className="profile-layout mt-8 grid grid-cols-[310px_minmax(0,1fr)] items-start gap-8 max-[700px]:mt-0 max-[700px]:grid-cols-[minmax(0,1fr)] max-[700px]:gap-6">
         <AccountSidebar active="profile" />
         {profile.isPending ? (
-          <div className="profile-loading" aria-label="Carregando perfil">
+          <div className="grid gap-6 *:h-[120px]" aria-label="Carregando perfil">
             <Skeleton />
             <Skeleton />
           </div>
         ) : profile.isError ? (
-          <section className="profile-feedback" role="alert">
+          <section className="grid justify-items-start gap-4" role="alert">
             <p>{errorMessage(profile.error)}</p>
             {axios.isAxiosError(profile.error) && profile.error.response?.status === 401 ? (
-              <Link to="/login" search={{ redirect: '/account' }}>
+              <Link to="/login" search={{ redirect: '/account' }} className="text-primary">
                 Entrar novamente
               </Link>
             ) : (
@@ -133,9 +131,9 @@ function ProfileForms({ initial, userId }: { initial: Profile; userId: string })
   };
   return (
     <div className="profile-content">
-      <h1>Perfil do colecionador</h1>
+      <h1 className="text-base font-bold">Perfil do colecionador</h1>
       <form
-        className="profile-form"
+        className="mt-8 max-[700px]:mt-6"
         onSubmit={(event) => {
           event.preventDefault();
           const parsed = profileInputSchema.safeParse(form);
@@ -146,28 +144,30 @@ function ProfileForms({ initial, userId }: { initial: Profile; userId: string })
           update.mutate(parsed.data);
         }}
       >
-        <div className="profile-fields">
-          <label>
-            Nome de exibição <span>*</span>
+        <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-6 max-[700px]:grid-cols-[minmax(0,1fr)] max-[700px]:gap-4">
+          <label className="block text-sm text-foreground">
+            Nome de exibição <span className="text-destructive">*</span>
             <Input
               value={form.displayName}
               required
               minLength={2}
               maxLength={50}
               onChange={(event) => set('displayName', event.target.value)}
+              className="mt-2"
             />
           </label>
-          <label>
-            Nome de usuário <span>*</span>
+          <label className="block text-sm text-foreground">
+            Nome de usuário <span className="text-destructive">*</span>
             <Input
               value={form.username}
               required
               minLength={2}
               maxLength={50}
               onChange={(event) => set('username', event.target.value)}
+              className="mt-2"
             />
           </label>
-          <label>
+          <label className="block text-sm text-foreground">
             E-mail
             <Input
               type="email"
@@ -185,43 +185,59 @@ function ProfileForms({ initial, userId }: { initial: Profile; userId: string })
                 setEmailError('');
                 emailMutation.reset();
               }}
+              className="mt-2"
             />
-            <small id="profile-email-help">
+            <small id="profile-email-help" className="mt-2 block text-xs text-muted-foreground">
               Use um e-mail que ainda não pertença a outra conta.
             </small>
-            <Button type="button" disabled={emailMutation.isPending} onClick={submitEmail}>
+            <Button
+              type="button"
+              disabled={emailMutation.isPending}
+              onClick={submitEmail}
+              className="max-[700px]:mt-3 max-[700px]:w-full"
+            >
               {emailMutation.isPending ? 'Atualizando e-mail...' : 'Atualizar e-mail'}
             </Button>
             {(emailError || emailMutation.isError) && (
-              <span role="alert" className="profile-error">
+              <span role="alert" className="mt-3 block text-sm text-destructive">
                 {emailError || errorMessage(emailMutation.error)}
               </span>
             )}
-            {emailMutation.isSuccess && <span role="status">E-mail atualizado.</span>}
+            {emailMutation.isSuccess && (
+              <span role="status" className="mt-3 block text-sm text-success">
+                E-mail atualizado.
+              </span>
+            )}
           </label>
-          <label>
-            Nome ENS <span className="profile-optional">(opcional)</span>
+          <label className="block text-sm text-foreground">
+            Nome ENS <span className="text-muted-foreground">(opcional)</span>
             <Input
               value={form.ens}
               maxLength={100}
               placeholder="nome.eth"
               onChange={(event) => set('ens', event.target.value)}
+              className="mt-2"
             />
           </label>
-          <label>
-            Apelido da carteira <span className="profile-optional">(opcional)</span>
+          <label className="block text-sm text-foreground">
+            Apelido da carteira <span className="text-muted-foreground">(opcional)</span>
             <Input
               value={form.walletNickname}
               maxLength={100}
               onChange={(event) => set('walletNickname', event.target.value)}
+              className="mt-2"
             />
           </label>
-          <div className="profile-avatar">
+          <div className="grid content-start gap-2 text-sm text-foreground">
             <span>Avatar</span>
-            <div className="profile-avatar-actions">
-              <div className="profile-avatar-image">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="grid size-[50px] place-items-center overflow-hidden rounded-full bg-surface-raised text-primary-hover">
                 {form.avatar ? (
-                  <img src={form.avatar} alt="Avatar selecionado" />
+                  <img
+                    src={form.avatar}
+                    alt="Avatar selecionado"
+                    className="size-full object-cover"
+                  />
                 ) : (
                   <ImagePlus size={24} aria-hidden="true" />
                 )}
@@ -256,17 +272,25 @@ function ProfileForms({ initial, userId }: { initial: Profile; userId: string })
           </div>
         </div>
         {(formError || update.isError) && (
-          <p className="profile-error" role="alert">
+          <p className="mt-3 text-sm text-destructive" role="alert">
             {formError || errorMessage(update.error)}
           </p>
         )}
-        {update.isSuccess && <p role="status">Perfil salvo.</p>}
-        <Button type="submit" disabled={update.isPending || isOptimizingAvatar}>
+        {update.isSuccess && (
+          <p role="status" className="mt-3 text-sm text-success">
+            Perfil salvo.
+          </p>
+        )}
+        <Button
+          type="submit"
+          disabled={update.isPending || isOptimizingAvatar}
+          className="mt-6 max-[700px]:w-full"
+        >
           {update.isPending ? 'Salvando...' : 'Salvar perfil'}
         </Button>
       </form>
       <form
-        className="profile-password"
+        className="mt-12 grid max-w-[417px] gap-4 max-[700px]:mt-8 max-[700px]:max-w-full"
         onSubmit={(event) => {
           event.preventDefault();
           setPasswordError('');
@@ -288,7 +312,7 @@ function ProfileForms({ initial, userId }: { initial: Profile; userId: string })
           });
         }}
       >
-        <h2>Alterar senha</h2>
+        <h2 className="text-base font-bold">Alterar senha</h2>
         <PasswordField
           label="Senha atual"
           autoComplete="current-password"
@@ -317,16 +341,24 @@ function ProfileForms({ initial, userId }: { initial: Profile; userId: string })
           }}
         />
         {(passwordError || password.isError) && (
-          <p className="profile-error" role="alert">
+          <p className="mt-3 text-sm text-destructive" role="alert">
             {passwordError || errorMessage(password.error)}
           </p>
         )}
-        {password.isSuccess && <p role="status">Senha alterada.</p>}
-        <Button type="submit" disabled={password.isPending}>
+        {password.isSuccess && (
+          <p role="status" className="mt-3 text-sm text-success">
+            Senha alterada.
+          </p>
+        )}
+        <Button
+          type="submit"
+          disabled={password.isPending}
+          className="justify-self-start max-[700px]:w-full max-[700px]:justify-self-stretch"
+        >
           {password.isPending ? 'Alterando...' : 'Alterar senha'}
         </Button>
       </form>
-      <p className="profile-note">
+      <p className="mt-8 flex items-center gap-2 text-xs text-muted-foreground">
         <Activity size={16} aria-hidden="true" /> Dados de demonstração; carteira, favoritos e
         outras áreas ainda estão em desenvolvimento.
       </p>
@@ -348,20 +380,24 @@ function PasswordField({
   const [visible, setVisible] = useState(false);
   const id = useId();
   return (
-    <div className="profile-password-field">
-      <label htmlFor={id}>{label}</label>
-      <span className="profile-password-control">
+    <div>
+      <label htmlFor={id} className="block text-sm text-foreground">
+        {label}
+      </label>
+      <span className="relative block">
         <Input
           id={id}
           type={visible ? 'text' : 'password'}
           autoComplete={autoComplete}
           value={value}
           onChange={(event) => onChange(event.target.value)}
+          className="mt-2 pr-12"
         />
         <button
           type="button"
           aria-label={`${visible ? 'Ocultar' : 'Mostrar'} ${label.toLowerCase()}`}
           onClick={() => setVisible((current) => !current)}
+          className="absolute right-1 bottom-0 grid size-11 cursor-pointer place-items-center text-muted-foreground"
         >
           {visible ? <EyeOff size={20} /> : <Eye size={20} />}
         </button>

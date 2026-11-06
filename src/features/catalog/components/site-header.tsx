@@ -9,7 +9,7 @@ export function SiteHeader() {
   const logout = useLogout();
   const isHome = useLocation({ select: (location) => location.pathname === '/' });
   return (
-    <header className="home-header">
+    <header className="home-header flex min-h-16 items-center justify-between gap-6 border-b border-primary-hover max-[700px]:hidden">
       <Link
         to="/"
         search={{
@@ -21,28 +21,37 @@ export function SiteHeader() {
           sort: 'recent',
           page: 1,
         }}
-        className="home-logo"
+        className="font-bold tracking-[0.1em] text-foreground hover:text-primary"
       >
         KURIO
       </Link>
-      <nav aria-label="Navegação principal" className="home-nav">
-        <a href="/#inicio" className={isHome ? 'active' : undefined}>
+      <nav
+        aria-label="Navegação principal"
+        className="flex items-center gap-8 max-[1000px]:gap-4 max-[700px]:hidden"
+      >
+        <a
+          href="/#inicio"
+          className={`no-underline hover:text-primary ${isHome ? 'font-bold text-primary' : 'text-foreground'}`}
+        >
           Início
         </a>
-        <a href="/#catalogo" className={isHome ? undefined : 'active'}>
+        <a
+          href="/#catalogo"
+          className={`no-underline hover:text-primary ${!isHome ? 'font-bold text-primary' : 'text-foreground'}`}
+        >
           Mercado
         </a>
-        <span>Criadores</span>
-        <span>Aprenda</span>
+        <span className="text-muted-foreground">Criadores</span>
+        <span className="text-muted-foreground">Aprenda</span>
       </nav>
-      <div className="home-actions">
+      <div className="flex items-center gap-8 max-[700px]:gap-4">
         <HeaderSearch />
-        <Link to="/cart" aria-label="Carrinho">
+        <Link to="/cart" aria-label="Carrinho" className="text-foreground hover:text-primary">
           <ShoppingBag size={22} />
         </Link>
         {session.data ? (
           <>
-            <Link to="/account" className="session-name">
+            <Link to="/account" className="session-name text-foreground hover:text-primary">
               {session.data.user.name}
             </Link>
             <Button variant="outline" onClick={() => logout.mutate()} disabled={logout.isPending}>

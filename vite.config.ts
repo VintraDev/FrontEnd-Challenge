@@ -7,4 +7,15 @@ import { fileURLToPath, URL } from 'node:url';
 export default defineConfig({
   plugins: [tanstackRouter({ target: 'react', autoCodeSplitting: true }), react(), tailwindcss()],
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('/src/contracts/') || id.includes('/src/lib/')) {
+            return 'core';
+          }
+        },
+      },
+    },
+  },
 });
