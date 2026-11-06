@@ -3,14 +3,12 @@ import { useId, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import axios from 'axios'
-import { Activity, Download, Eye, EyeOff, Heart, ImagePlus, LifeBuoy, LogOut, ShoppingBag, Tag, UserRound, Wallet } from 'lucide-react'
+import { Activity, Eye, EyeOff, ImagePlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { UnavailableAction } from '@/components/feedback/unavailable-action'
-import { SiteFooter } from '@/components/layout/site-footer'
+import { AccountSidebar } from '@/components/account/account-sidebar'
 import { SiteHeader } from '@/features/catalog/components/site-header'
-import { useLogout } from '@/features/auth/session'
 import { profileInputSchema, type Profile, type ProfileInput } from '@/contracts/profile'
 import { changePassword, getProfile, updateProfile } from './api'
 import '@/features/catalog/home.css'
@@ -27,10 +25,9 @@ function errorMessage(error: unknown) {
 
 export function ProfilePage({ userId }: { userId: string }) {
   const profile = useQuery({ queryKey: queryKeys.profile(userId), queryFn: ({ signal }) => getProfile(signal), retry: false })
-  const logout = useLogout()
-  return <div className="home-shell profile-shell"><SiteHeader /><main className="profile-layout"><aside className="profile-sidebar"><h2>Meu perfil</h2><nav aria-label="Menu da conta"><Link to="/account" aria-current="page"><UserRound size={20} /> Dados do perfil</Link><UnavailableAction title="Carteiras"><Wallet size={20} /> Carteiras</UnavailableAction><UnavailableAction title="Atividade"><ShoppingBag size={20} /> Atividade</UnavailableAction><UnavailableAction title="Lista de interesse"><Heart size={20} /> Lista de interesse</UnavailableAction><UnavailableAction title="Ofertas"><Tag size={20} /> Ofertas</UnavailableAction><UnavailableAction title="Arquivos baixados"><Download size={20} /> Arquivos baixados</UnavailableAction><UnavailableAction title="Suporte"><LifeBuoy size={20} /> Suporte</UnavailableAction><button className="profile-logout" type="button" disabled={logout.isPending} onClick={() => logout.mutate()}><LogOut size={20} /> {logout.isPending ? 'Saindo...' : 'Sair'}</button>{logout.isError && <p role="alert">Não foi possível sair. Tente novamente.</p>}</nav></aside>
+  return <div className="home-shell profile-shell"><SiteHeader /><main className="profile-layout"><AccountSidebar active="profile" />
     {profile.isPending ? <div className="profile-loading" aria-label="Carregando perfil"><Skeleton /><Skeleton /></div> : profile.isError ? <section className="profile-feedback" role="alert"><p>{errorMessage(profile.error)}</p>{axios.isAxiosError(profile.error) && profile.error.response?.status === 401 ? <Link to="/login" search={{ redirect: '/account' }}>Entrar novamente</Link> : <Button onClick={() => void profile.refetch()}>Tentar novamente</Button>}</section> : <ProfileForms key={userId} initial={profile.data} userId={userId} />}
-  </main><SiteFooter /></div>
+  </main></div>
 }
 
 function ProfileForms({ initial, userId }: { initial: Profile; userId: string }) {

@@ -14,7 +14,7 @@ test('detalhe acessa a API, respeita estoque e navega entre NFTs', async ({ page
   await page.getByRole('button', { name: '1/50' }).click()
   await expect(page.locator('output')).toHaveText('1')
   await expect(page.getByRole('button', { name: 'ADICIONAR AO CARRINHO' })).toBeEnabled()
-  await expect(page.getByRole('button', { name: 'Favoritar' })).toBeDisabled()
+  await expect(page.getByRole('link', { name: 'Entre para favoritar' }).filter({ visible: true })).toBeVisible()
   await page.getByRole('link', { name: /Sage Nomad #009/ }).click()
   await expect(page.getByRole('heading', { name: 'Sage Nomad #009' })).toBeVisible()
   await expect(page.getByText('1.69 ETH').first()).toBeVisible()

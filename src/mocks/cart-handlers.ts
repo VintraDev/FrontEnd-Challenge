@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw'
 import { z } from 'zod'
 import Decimal from 'decimal.js'
-import { catalog } from './fixtures/catalog'
+import { catalogSnapshot } from './scenarios/catalog'
 import { editionsFor } from './fixtures/editions'
 import { changeCart, readCart, type CartRecord } from './db/cart'
 
@@ -10,7 +10,7 @@ const fail = (error: unknown) => error instanceof CartError ? HttpResponse.json(
 const lineInput = z.object({ nftId: z.string(), editionId: z.string(), quantity: z.number().int().positive() })
 const quantityInput = z.object({ quantity: z.number().int().positive() })
 function editionFor(nftId: string, editionId: string) {
-  const nft = catalog.find((item) => item.id === nftId)
+  const nft = catalogSnapshot().find((item) => item.id === nftId)
   const edition = nft && editionsFor(nft).find((item) => item.id === editionId)
   if (!nft || !edition) throw new CartError(404, 'NFT ou edição não encontrado.')
   return { nft, edition }

@@ -61,3 +61,5 @@
   .detail-error, .detail-loading { margin: var(--space-16) var(--space-6) 0; }
   .detail-shell .site-footer { margin: var(--space-12) var(--space-6) 0; }
 }
+
+.detail-mobile-favorite span { display: none; }

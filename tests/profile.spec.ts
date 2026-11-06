@@ -16,6 +16,7 @@ test('perfil exige sessão, persiste alterações e mantém isolamento entre con
   expect(unauthorized).toBe(401)
   await login(page, 'ana@kurio.test', 'KurioDemo123!')
   await expect(page.getByRole('heading', { name: 'Perfil do colecionador' })).toBeVisible()
+  await expect(page.locator('footer')).toHaveCount(0)
   await page.getByLabel('Nome de exibição').fill('Ana atualizada')
   await page.getByLabel('Nome ENS').fill('ana.eth')
   await page.getByRole('button', { name: 'Salvar perfil' }).click()

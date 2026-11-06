@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as DiagnosticsRouteImport } from './routes/diagnostics'
+import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as AccountIndexRouteImport } from './routes/account.index'
@@ -38,6 +39,11 @@ const CheckoutRoute = CheckoutRouteImport.update({
 const DiagnosticsRoute = DiagnosticsRouteImport.update({
   id: '/diagnostics',
   path: '/diagnostics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FavoritesRoute = FavoritesRouteImport.update({
+  id: '/favorites',
+  path: '/favorites',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/diagnostics': typeof DiagnosticsRoute
+  '/favorites': typeof FavoritesRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/account/wallets': typeof AccountWalletsRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/diagnostics': typeof DiagnosticsRoute
+  '/favorites': typeof FavoritesRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/account/wallets': typeof AccountWalletsRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/diagnostics': typeof DiagnosticsRoute
+  '/favorites': typeof FavoritesRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/account/wallets': typeof AccountWalletsRoute
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/diagnostics'
+    | '/favorites'
     | '/login'
     | '/register'
     | '/account/wallets'
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/diagnostics'
+    | '/favorites'
     | '/login'
     | '/register'
     | '/account/wallets'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/diagnostics'
+    | '/favorites'
     | '/login'
     | '/register'
     | '/account/wallets'
@@ -152,6 +164,7 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   DiagnosticsRoute: typeof DiagnosticsRoute
+  FavoritesRoute: typeof FavoritesRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
   AccountWalletsRoute: typeof AccountWalletsRoute
@@ -188,6 +201,13 @@ declare module '@tanstack/react-router' {
       path: '/diagnostics'
       fullPath: '/diagnostics'
       preLoaderRoute: typeof DiagnosticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/favorites': {
+      id: '/favorites'
+      path: '/favorites'
+      fullPath: '/favorites'
+      preLoaderRoute: typeof FavoritesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -240,6 +260,7 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   DiagnosticsRoute: DiagnosticsRoute,
+  FavoritesRoute: FavoritesRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
   AccountWalletsRoute: AccountWalletsRoute,

@@ -7,7 +7,7 @@ test('home mobile oferece busca, filtros acessíveis e navegação inferior', as
   const nav = page.getByRole('navigation', { name: 'Navegação inferior' })
   await expect(nav).toBeVisible()
   await expect(nav.getByRole('link', { name: 'Início' })).toHaveAttribute('aria-current', 'page')
-  await expect(nav.getByRole('button', { name: 'Favoritos indisponíveis' })).toBeDisabled()
+  await expect(nav.getByRole('link', { name: 'Favoritos' })).toBeVisible()
   await page.getByRole('button', { name: 'Abrir filtros' }).click()
   const sheet = page.getByRole('dialog', { name: 'Filtros' })
   await expect(sheet).toBeVisible()

@@ -38,7 +38,7 @@ async function access<T>(mode: IDBTransactionMode, action: (store: IDBObjectStor
 }
 const error = (status: number, code: string, message: string) => HttpResponse.json({ error: { code, message } }, { status })
 const tokenFrom = (request: Request) => request.headers.get('authorization')?.match(/^Bearer (.+)$/)?.[1]
-async function sessionFrom(request: Request) {
+export async function sessionFrom(request: Request) {
   const token = tokenFrom(request)
   if (!token) return null
   const session = await access<StoredSession | undefined>('readonly', (store) => store.get(token))

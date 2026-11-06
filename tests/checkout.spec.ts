@@ -18,6 +18,7 @@ test('revisão de pagamento usa carrinho e cotação reais e não confirma pedid
   await page.getByRole('dialog').getByRole('button', { name: 'Entrar', exact: true }).click()
   await expect(page).toHaveURL(/\/checkout/)
   await expect(page.getByRole('heading', { name: 'Pagamento', exact: true })).toBeVisible()
+  await expect(page.locator('footer')).toHaveCount(0)
   await expect(page.getByText('Emerald Ape #042')).toBeVisible()
   await expect(page.getByText('Cupom aplicado: KURIO10')).toBeVisible()
   await expect(page.getByText('1.087 ETH', { exact: true }).filter({ visible: true })).toBeVisible()
