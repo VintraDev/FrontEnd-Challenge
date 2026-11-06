@@ -2,6 +2,15 @@
 
 > **Status:** itens marcados foram comprovados no escopo descrito; itens desmarcados permanecem pendentes, mesmo quando há trabalho parcial. `RF`, `RNF` e `RN` referem-se aos documentos de requisitos e regras de negócio. Critério eliminatório precede refinamento secundário.
 
+## Estado atual e validação mais recente
+
+- **M0-02 e M0-05 parciais:** schemas de domínio e query keys compartilhadas existem; sessão, perfis, favoritos, carteiras e carrinho visitante persistem e são resetáveis. Faltam contratos e estado de pedidos, isolamento do carrinho de conta, cenários adicionais e reset integral entre bases.
+- **M2-03 validado:** favoritos autenticados persistem por usuário, com rollback em falha. A página reutiliza a sidebar da conta; o acesso está no perfil e no menu inferior mobile.
+- **M2-04 parcial:** perfil e cadastro/edição de duas carteiras por usuário funcionam; seleção no checkout, conexão/recusa/desconexão e e-mail editável permanecem pendentes.
+- **Checkout e pedidos:** a tela de pagamento continua sendo prévia; não há confirmação de pedido real, cotação revalidada ou recibo de compra confirmado.
+- **Evidência histórica:** a última suíte completa no preview passou com 64 testes após a página de carteiras. Após o ajuste de navegação de favoritos, typecheck, build, verificação de tokens e 17 testes direcionados no preview passaram; capturas desktop/mobile foram inspecionadas. Não foram reexecutados nesta atualização documental.
+- **Entrega:** baselines visuais, auditoria Lighthouse e deploy público seguem pendentes. Publicação exige autorização explícita.
+
 ## Roadmap e dependências
 
 ```mermaid
@@ -19,25 +28,25 @@ flowchart TD
 ## M0 — Fundação e viabilidade do desafio
 
 - [x] `M0-01` — Instalar Vite/React/TS strict, Tailwind/shadcn, Router, Query, Axios, MSW, Playwright (RNF-001/019). **Validado:** configuração, build e smoke tests; UI e rotas são uma fundação, não as telas finais.
-- [ ] `M0-02` — Definir schemas/DTOs e query keys compartilhadas (RF-001–RF-049). **Parcial:** existe schema Zod somente para diagnóstico; faltam contratos de domínio e query keys compartilhadas.
-- [ ] `M0-03` — REST MSW retorna catálogo via Axios, com estado de loading e erro (RF-001/008). **Parcial:** `GET /api/health` passa por Axios, Query e MSW; catálogo e testes dos estados de erro/loading continuam pendentes.
+- [ ] `M0-02` — Definir schemas/DTOs e query keys compartilhadas (RF-001–RF-049). **Parcial:** schemas de domínio e query keys compartilhadas existem; contratos finais de pedidos, normalização de erros e fronteiras restantes continuam pendentes.
+- [ ] `M0-03` — REST MSW retorna catálogo via Axios, com estado de loading e erro (RF-001/008). **Parcial:** catálogo via Axios/Query/MSW e cenários reproduzíveis estão implementados; cobertura completa dos estados de erro/loading e respostas fora de ordem continua pendente.
 - [ ] `M0-04` — Spike Socket.IO real com binding e eventos `nft.updated` (RF-043/045). **Parcial:** handshake, `probe`, `nft.updated`, `order.updated` e nova conexão manual passaram em desenvolvimento e preview; faltam reconexão automática após interrupção, eventos antigos/duplicados e validação em ambiente publicado.
-- [ ] `M0-05` — Reset/persistência determinísticos com dois usuários (RF-017/049).
+- [ ] `M0-05` — Reset/persistência determinísticos com dois usuários (RF-017/049). **Parcial:** sessão, perfis, favoritos, carteiras e carrinho visitante persistem e podem ser resetados; faltam pedidos, carrinho de conta e reset integral entre bases.
 - [ ] `M0-06` — Publicar build mínimo e testar refresh de rota (RF-057). **Parcial:** acesso direto e refresh passaram no preview local; publicação e validação pública não foram realizadas.
 
-### Evidências da validação — 05/11/2026
+### Evidências históricas da fundação — 05/11/2026
 
 - `npm run typecheck`: passou; `npm run build`: passou.
 - `CHROMIUM_PATH=/usr/bin/chromium npm run test:smoke`: 2 testes passaram em desenvolvimento.
 - `CHROMIUM_PATH=/usr/bin/chromium SMOKE_PREVIEW=1 npm run test:smoke`: 2 testes passaram no preview do build.
 - Os testes verificam resposta REST de diagnóstico, conexão e eventos de socket, nova conexão manual, acesso direto, refresh e 404. Não comprovam cenários de negócio nem recuperação automática da conexão.
-- Não há implementação de catálogo, sessão, carrinho ou checkout; as rotas exibem placeholders. Lint, regressão visual, Lighthouse e deploy seguem pendentes.
+- Naquela etapa inicial, catálogo, sessão, carrinho e checkout ainda eram placeholders. Consulte o estado atual acima para os avanços posteriores.
 
 ## M1 — Descoberta e catálogo
 
 - [ ] `M1-01` — Shell visual, tokens derivados do protótipo inspecionado pelo MCP do Pencil, inventário de assets e grids (RF-050–053). **Parcial:** Home desktop, grid, tokens e quatro assets locais do Pencil implementados; fidelidade integral, inventário completo e comparação visual detalhada continuam pendentes; a Home mobile, o footer e a navegação inferior foram adaptados ao frame do Pencil.
 - [ ] `M1-02` — Busca, filtros combinados, sort e paginação na URL (RF-001–008). **Parcial:** busca, coleção, rede, faixa de preço, ordenação e página passam por Axios/MSW e URL; faltam testes completos de falha, respostas fora de ordem e cenários resetáveis.
-- [ ] `M1-03` — Detalhe, seleção de edição e quantidade, 404 e indisponibilidade (RF-009–011). **Parcial:** detalhe desktop via Axios/MSW, edições e limites, 404 e relacionados; faltam galeria completa, favoritos e checkout reais e regressão visual formal; a variante mobile foi adaptada e testada.
+- [ ] `M1-03` — Detalhe, seleção de edição e quantidade, 404 e indisponibilidade (RF-009–011). **Parcial:** detalhe desktop via Axios/MSW, edições e limites, 404 e relacionados; faltam galeria completa, checkout real e regressão visual formal; a variante mobile foi adaptada e testada.
 - [ ] `M1-04` — Testes E2E-01 e E2E-02, incluindo respostas fora de ordem.
 
 ### Evidência da fundação visual — 05/11/2026
@@ -73,8 +82,8 @@ flowchart TD
 
 - [ ] `M2-01` — Registro/login/session/logout e retorno após acesso protegido (RF-012–017). **Parcial:** cadastro, login, sessão, expiração no refresh, logout e proteção do checkout implementados; tratamento de expiração em tela aberta pendente.
 - [ ] `M2-02` — Scope privado, limpeza no logout e troca A→B; proibir acesso a pedido alheio (RF-017/022).
-- [ ] `M2-03` — Favoritos otimizados com rollback (RF-023).
-- [ ] `M2-04` — Perfil, avatar, senha e carteiras (RF-018–021). **Parcial:** perfil, avatar e senha implementados para a sessão; alteração de e-mail e carteiras pendentes.
+- [x] `M2-03` — Favoritos otimizados com rollback (RF-023): sessão, isolamento por usuário, persistência, reset e falha de mutation validados no preview.
+- [ ] `M2-04` — Perfil, avatar, senha e carteiras (RF-018–021). **Parcial:** perfil, avatar, senha e cadastro/edição de carteiras implementados para a sessão; alteração de e-mail e integração das carteiras ao checkout pendentes.
 - [ ] `M2-05` — E2E-03, E2E-04 e E2E-08.
 
 ### Login e sessão — implementação parcial
@@ -201,10 +210,50 @@ Status real:
 
 **Critérios de pronto:** [Definition of Ready / Done](06-qualidade/definition-of-done.md). **Riscos:** [Spikes](07-planejamento/spikes-e-dependencias.md). **Mapa de testes:** [Rastreabilidade](06-qualidade/matriz-de-testes-e-requisitos.md).
 
-### Fundação A1/A2 — incremento parcial
+### Fundação A1/A2 — registro histórico do incremento inicial
 
 - Contratos existentes de usuário, sessão, catálogo, edição, carrinho, item, cotação e prévia de recibo foram reaproveitados e suas partes compartilhadas exportadas. `api.ts` registra códigos gerais e aceita os códigos específicos já emitidos pelos handlers; ainda não existe conversão de códigos nem contratos finais de pedido/carteira.
 - As chaves existentes foram centralizadas em `src/lib/query-keys.ts` sem alterar seus valores. Perfil e chaves reservadas para dados privados incluem o usuário; carrinho e cotação continuam explicitamente de visitante. Query usa os defaults do TanStack (incluindo três retries no cliente), exceto as consultas que já definem `retry: false`; mutations invalidam as chaves existentes. Não foi implementado o isolamento de carrinho de conta nem merge.
 - `POST /api/__test/reset` limpa sessões, usuários cadastrados, perfis e carrinhos persistidos e restaura as duas contas de fixture. As duas bases IndexedDB são limpas sequencialmente, não em uma transação atômica entre bases. A chamada não limpa token local nem cache Query de uma página já aberta; testes devem reiniciar a página/estado do cliente após reset. Pedidos, favoritos e carteiras ainda não possuem repositórios. O endpoint existe apenas quando o worker mock está ativo.
 - Cenários configuráveis de latência, rede, erros e conflitos, reset integral de recursos futuros, schemas finais de carteira/pedido e validação completa de contratos nas fronteiras permanecem pendentes; M0-02 e M0-05 continuam abertos. Proposta de compatibilização: manter os DTOs e códigos existentes, adicionar mapeamento explícito e versionar/adaptar os novos contratos antes de mudar endpoints, handlers ou consumidores.
 - Validação deste incremento: `npm run typecheck` e `npm run build` passaram; `CHROMIUM_PATH=/usr/bin/chromium SMOKE_PREVIEW=1 npm run test:smoke` passou com 55 testes. A primeira suíte teve 54 aprovados e uma falha no teste novo por chamada anterior à inicialização do worker; após sincronização, o teste direcionado e a suíte completa passaram no preview.
+
+### Rodapé nas telas indicadas
+
+- Por solicitação do usuário, o rodapé compartilhado foi removido de pagamento e perfil; permanece em início, detalhes do NFT e carrinho. A informação anterior de que o checkout reutilizava o rodapé descreve o estado anterior a esta alteração.
+- `npm run check:tokens`, `npm run typecheck` e `npm run build` passaram. No preview, 16 testes direcionados de pagamento, perfil e início passaram, incluindo presença do rodapé em carrinho/detalhes e ausência em pagamento/perfil. Não foi realizada nova comparação visual formal.
+
+
+### Favoritos — 05/11/2026
+
+- Página `/favorites`, ações no detalhe e navegação via perfil e menu mobile; o ícone do cabeçalho foi posteriormente removido. Endpoints Axios/MSW autenticados, persistência IndexedDB por usuário, reset e atualização otimista com rollback. Sem frame específico no Pencil, a página adapta os padrões existentes e não inclui rodapé.
+- `npm run typecheck`, `npm run check:tokens` e `npm run build` passaram; `CHROMIUM_PATH=/usr/bin/chromium SMOKE_PREVIEW=1 npm run test:smoke` passou com 61 testes. Inclui sessão obrigatória, A/B, persistência, remoção, rollback, reset e mobile; estado vazio inspecionado em desktop e mobile. Expiração durante navegação continua pendente em B1.
+
+
+### Carteiras — implementação parcial
+
+- Formulário de carteira principal e secundária em `/account/wallets`, baseado no frame desktop do Pencil e adaptado para mobile; `GET/POST/PATCH /api/wallets` são autenticados e persistem por usuário, com validação e reset. Carteiras de outras contas retornam 404 ao editar. O uso de dados é simulado e não solicita segredos.
+- Seleção no checkout, conexão/recusa/desconexão e exclusão permanecem pendentes. Entradas anteriores sobre indisponibilidade de carteiras representam o estado histórico anterior a esta etapa.
+
+- Validação: `npm run check:tokens`, `npm run typecheck` e `npm run build` passaram; a suíte Playwright no preview passou com 64 testes. Após acrescentar uma verificação de rejeição HTTP 422 e a indicação acessível dos campos obrigatórios, os 3 testes direcionados de carteiras passaram novamente. Foram inspecionadas capturas em 1440 e 390 px. A primeira execução direcionada teve falha de seletor; a seguinte detectou reload antes da conclusão do salvamento. Ambas foram corrigidas e reexecutadas.
+
+### Navegação de favoritos
+
+- A página de favoritos reutiliza a sidebar de conta e destaca “Lista de interesse”. O ícone de favoritos foi removido do cabeçalho; o acesso permanece pelo perfil e pelo menu inferior mobile, conforme solicitado.
+- `npm run check:tokens`, `npm run typecheck` e `npm run build` passaram. No preview, 17 testes direcionados de favoritos, perfil, carteiras e navegação mobile passaram; capturas em 1440 e 390 px foram inspecionadas.
+
+### Campo de cupom
+
+- Campo e botão de aplicação compartilham o contorno, com junção arredondada; foco por teclado permanece visível no grupo. A mudança usa tokens existentes.
+- `npm run check:tokens`, `npm run typecheck`, `npm run build` e 5 testes direcionados de carrinho desktop/mobile no preview passaram. O campo foi inspecionado em desktop e mobile; o contorno de foco do grupo foi verificado no navegador.
+- Ajuste complementar: borda esquerda do botão removida; largura computada de 0 px e foco do grupo verificados no navegador. `check:tokens`, typecheck, build e 5 testes de carrinho no preview passaram.
+
+### Pesquisa no cabeçalho
+
+- A lupa abre um formulário acessível e pesquisa no catálogo via parâmetros da URL. Na Home, a pesquisa preserva os filtros existentes e volta à primeira página; nas demais rotas, usa filtros padrão. Escape fecha o formulário e devolve o foco à lupa. O popover é uma adaptação provisória: o frame inspecionado mostra apenas o ícone.
+- `npm run check:tokens`, `npm run typecheck` e `npm run build` passaram; 9 testes direcionados de pesquisa, catálogo e interação passaram no preview. Capturas em 1440 e 768 px foram inspecionadas, sem overflow horizontal em 768 px.
+
+### Validação antes dos commits
+
+- `npm run check:tokens`, `npm run typecheck` e `npm run build` passaram. `CHROMIUM_PATH=/usr/bin/chromium SMOKE_PREVIEW=1 npm run test:smoke -- --workers=2` passou com 66 testes.
+- Uma execução anterior teve 65 aprovados e falha no teste de favoritos ao navegar após a atualização otimista sem aguardar a gravação. O teste foi ajustado para aguardar a resposta REST antes de verificar persistência. Outra execução foi interrompida e terminou com 60 aprovados e 6 timeouts; a suíte completa foi executada novamente com dois workers e passou.

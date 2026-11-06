@@ -1,6 +1,6 @@
 # Frontend Challenge — fundação
 
-Fundação, catálogo, detalhe e carrinho de visitante estão parcialmente implementados. Cadastro, login e sessão simulados estão parcialmente disponíveis; favoritos, checkout completo e pedidos ainda estão pendentes.
+Fundação, catálogo, detalhe e carrinho de visitante estão parcialmente implementados. Cadastro, login e sessão simulados estão parcialmente disponíveis; favoritos estão disponíveis para usuários autenticados; checkout completo e pedidos ainda estão pendentes.
 
 ## Execução
 
@@ -43,4 +43,21 @@ O carrinho ainda não é isolado por conta nem mesclado no login. Dados privados
 O cadastro cria uma conta fictícia persistida no IndexedDB e inicia sessão; os e-mails são normalizados e duplicatas retornam conflito. Novas senhas são verificadas com PBKDF2 e salt aleatório no mock. Contas e sessões locais são apenas para demonstração e podem ser inspecionadas no navegador.
 
 
-O perfil simulado em `/account` permite editar nome, nome de usuário, ENS, apelido e avatar, além de alterar a senha. Os dados são associados à sessão e persistem em `kurio-mock-auth`; o e-mail permanece somente para leitura, e a gestão de carteiras ainda não foi implementada.
+O perfil simulado em `/account` permite editar nome, nome de usuário, ENS, apelido e avatar, além de alterar a senha. Os dados são associados à sessão e persistem em `kurio-mock-auth`; o e-mail permanece somente para leitura.
+
+
+## Cenários de teste MSW
+
+Com mocks ativos, `POST /api/__test/scenario` recebe JSON como `{ "catalog": "http-500" }`. Valores aceitos: `default`, `empty`, `http-404`, `http-500`, `network-error`, `slow`, `price-changed` e `out-of-stock`. A latência simulada é de 1200 ms; erros de rede/HTTP, vazio e latência afetam a listagem. Alteração de preço e estoque afeta o NFT `nft-1` na listagem, detalhe e carrinho/cotação, sem emitir eventos Socket.IO.
+
+`POST /api/__test/reset` restaura o cenário e limpa os dados existentes dos mocks (sessões, cadastros, perfis, favoritos, carteiras e carrinho visitante). Recarregue a página e remova `kurio-demo-session` do armazenamento local para limpar também a identidade em cache no cliente. O reset das duas bases é sequencial e recursos ainda não implementados não são cobertos.
+
+
+## Favoritos
+
+Acesse `/favorites` pelo menu inferior no mobile ou pela lista de interesse do perfil. No detalhe do NFT, use o botão de favoritos; visitantes são direcionados ao login e retornam ao NFT. `GET /api/favorites`, `POST /api/favorites` e `DELETE /api/favorites/:nftId` usam a sessão atual e persistem IDs por usuário no IndexedDB `kurio-mock-favorites`. A interface usa atualização otimista com reversão e reconsulta em caso de erro. `POST /api/__test/reset` limpa favoritos junto dos demais dados dos mocks. Para simular falha de inclusão/remoção, configure `POST /api/__test/scenario` com `{ "catalog": "default", "favorites": "http-500" }`.
+
+
+## Carteiras de demonstração
+
+A página `/account/wallets` permite cadastrar e editar uma carteira principal e uma secundária por usuário. Os campos são validados via Zod e pelos endpoints autenticados `GET /api/wallets`, `POST /api/wallets` e `PATCH /api/wallets/:walletId`; os dados persistem no IndexedDB `kurio-mock-wallets` e são apagados no reset. Use apenas dados fictícios: não informe chave privada nem frase de recuperação. A seleção no checkout, conexão simulada, recusa e desconexão ainda não estão implementadas. A falha de gravação pode ser reproduzida com `{ "catalog": "default", "wallets": "http-500" }` em `POST /api/__test/scenario`.
