@@ -13,6 +13,23 @@ interface HeroCarouselProps {
   isLoading: boolean;
 }
 
+const heroSectionClass =
+  'hero grid grid-cols-[1fr_450px] items-center gap-12 overflow-hidden rounded-xl bg-surface max-[1000px]:grid-cols-[1fr_40%] max-[700px]:min-h-[190px] max-[700px]:grid-cols-[minmax(0,1fr)_38%] max-[700px]:gap-2 max-[700px]:rounded-md max-[700px]:bg-surface-raised';
+const heroCopyClass = 'hero-copy py-8 pr-8 pl-12 max-[700px]:p-4';
+const eyebrowClass = 'eyebrow font-bold text-foreground max-[700px]:text-xs';
+const desktopTitleClass =
+  'desktop-hero-title my-2 text-[clamp(2rem,3vw,var(--font-size-display))] leading-[1.4] font-bold max-[700px]:hidden';
+const mobileTitleClass =
+  'mobile-hero-title my-2 hidden text-lg leading-[1.6] font-bold max-[700px]:block';
+const desktopCopyClass =
+  'desktop-hero-copy text-sm leading-[1.7] text-muted-foreground max-[700px]:hidden';
+const mobileCopyClass =
+  'mobile-hero-copy hidden text-xs leading-[1.7] text-muted-foreground max-[700px]:block';
+const heroLinkClass =
+  'hero-link mt-8 inline-flex rounded-md bg-primary px-8 py-3 font-bold text-primary-foreground no-underline min-[701px]:hover:bg-(--button-primary-hover-bg) max-[700px]:mt-2 max-[700px]:bg-transparent max-[700px]:p-0 max-[700px]:text-xs max-[700px]:text-primary max-[700px]:hover:text-foreground';
+const heroImageClass =
+  'h-[450px] w-full rounded-xl object-cover max-[700px]:aspect-square max-[700px]:h-auto max-[700px]:w-[calc(100%-var(--space-4))] max-[700px]:rounded-lg';
+
 export function HeroCarousel({ products, isLoading }: HeroCarouselProps) {
   const [api, setApi] = useState<CarouselApi>();
   const [selected, setSelected] = useState(0);
@@ -32,23 +49,27 @@ export function HeroCarousel({ products, isLoading }: HeroCarouselProps) {
 
   if (!products.length) {
     return (
-      <section className="hero" aria-busy={isLoading || undefined} aria-label="Destaques">
-        <div className="hero-copy">
-          <p className="eyebrow">Bem-vindo à Kurio</p>
-          <h1 className="desktop-hero-title">
+      <section
+        className={`${heroSectionClass} max-[700px]:mt-4`}
+        aria-busy={isLoading || undefined}
+        aria-label="Destaques"
+      >
+        <div className={heroCopyClass}>
+          <p className={eyebrowClass}>Bem-vindo à Kurio</p>
+          <h1 className={desktopTitleClass}>
             SEJA DONO DO FUTURO
             <br /> DA ARTE DIGITAL
           </h1>
-          <h1 className="mobile-hero-title">
+          <h1 className={mobileTitleClass}>
             SEJA DONO DA
             <br /> CULTURA DIGITAL
           </h1>
-          <p className="desktop-hero-copy">
+          <p className={desktopCopyClass}>
             Descubra NFTs selecionados de criadores emergentes e consagrados. Colecione arte digital
             rara, apoie artistas e tenha uma parte da cultura da internet.
           </p>
-          <p className="mobile-hero-copy">Descubra NFTs selecionados de criadores do mundo todo.</p>
-          <a className="hero-link" href="#catalogo">
+          <p className={mobileCopyClass}>Descubra NFTs selecionados de criadores do mundo todo.</p>
+          <a className={heroLinkClass} href="#catalogo">
             EXPLORAR
           </a>
         </div>
@@ -58,6 +79,7 @@ export function HeroCarousel({ products, isLoading }: HeroCarouselProps) {
           width={640}
           height={640}
           fetchPriority="high"
+          className={heroImageClass}
         />
       </section>
     );
@@ -65,22 +87,22 @@ export function HeroCarousel({ products, isLoading }: HeroCarouselProps) {
 
   return (
     <Carousel
-      className="hero-carousel"
+      className="hero-carousel mt-8 max-[700px]:mt-4"
       opts={{ loop: products.length > 1 }}
       setApi={setApi}
       aria-label="Destaques da Kurio"
     >
-      <CarouselContent className="hero-carousel-content">
+      <CarouselContent className="hero-carousel-content ml-0">
         {products.map((product, index) => {
           const isWelcomeSlide = index === 0;
           return (
-            <CarouselItem key={product.id} className="hero-carousel-item">
-              <section className="hero" aria-label={`Destaque: ${product.title}`}>
-                <div className="hero-copy">
-                  <p className="eyebrow">
+            <CarouselItem key={product.id} className="hero-carousel-item pl-0">
+              <section className={heroSectionClass} aria-label={`Destaque: ${product.title}`}>
+                <div className={heroCopyClass}>
+                  <p className={eyebrowClass}>
                     {isWelcomeSlide ? 'Bem-vindo à Kurio' : `Em destaque · ${product.network}`}
                   </p>
-                  <h1 className="desktop-hero-title">
+                  <h1 className={desktopTitleClass}>
                     {isWelcomeSlide ? (
                       <>
                         SEJA DONO DO FUTURO
@@ -90,7 +112,7 @@ export function HeroCarousel({ products, isLoading }: HeroCarouselProps) {
                       <>COLECIONE {product.title.toUpperCase()}</>
                     )}
                   </h1>
-                  <h1 className="mobile-hero-title">
+                  <h1 className={mobileTitleClass}>
                     {isWelcomeSlide ? (
                       <>
                         SEJA DONO DA
@@ -100,18 +122,18 @@ export function HeroCarousel({ products, isLoading }: HeroCarouselProps) {
                       product.title.toUpperCase()
                     )}
                   </h1>
-                  <p className="desktop-hero-copy">
+                  <p className={desktopCopyClass}>
                     {isWelcomeSlide
                       ? 'Descubra NFTs selecionados de criadores emergentes e consagrados. Colecione arte digital rara, apoie artistas e tenha uma parte da cultura da internet.'
                       : `${product.category} na rede ${product.network}, disponível a partir de ${product.priceEth} ETH.`}
                   </p>
-                  <p className="mobile-hero-copy">
+                  <p className={mobileCopyClass}>
                     {isWelcomeSlide
                       ? 'Descubra NFTs selecionados de criadores do mundo todo.'
                       : `${product.category} · ${product.priceEth} ETH`}
                   </p>
                   <Link
-                    className="hero-link"
+                    className={heroLinkClass}
                     to="/nft/$nftId"
                     params={{ nftId: product.id }}
                     aria-label={`Explorar ${product.title}`}
@@ -127,6 +149,7 @@ export function HeroCarousel({ products, isLoading }: HeroCarouselProps) {
                   fetchPriority={isWelcomeSlide ? 'high' : 'low'}
                   loading={isWelcomeSlide ? undefined : 'lazy'}
                   decoding={isWelcomeSlide ? undefined : 'async'}
+                  className={heroImageClass}
                 />
               </section>
             </CarouselItem>
@@ -134,12 +157,16 @@ export function HeroCarousel({ products, isLoading }: HeroCarouselProps) {
         })}
       </CarouselContent>
       {products.length > 1 && (
-        <div className="hero-carousel-indicators" role="group" aria-label="Selecionar destaque">
+        <div
+          className="hero-carousel-indicators absolute bottom-6 left-1/2 z-1 flex -translate-x-1/2 items-center gap-1 max-[700px]:bottom-3"
+          role="group"
+          aria-label="Selecionar destaque"
+        >
           {products.map((product, index) => (
             <button
               key={product.id}
               type="button"
-              className="hero-carousel-indicator"
+              className="hero-carousel-indicator box-content size-2 cursor-pointer rounded-pill border-0 bg-primary-hover bg-clip-content p-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-[current=true]:bg-foreground"
               aria-label={`Mostrar destaque ${index + 1}: ${product.title}`}
               aria-current={selected === index ? 'true' : undefined}
               onClick={() => api?.scrollTo(index)}

@@ -14,7 +14,10 @@ export function PopoverContent({
       <PopoverPrimitive.Content
         data-slot="popover-content"
         sideOffset={sideOffset}
-        className={cn('mobile-account-popover', className)}
+        className={cn(
+          'mobile-account-popover z-60 min-w-[196px] rounded-md border border-border bg-surface p-3 text-foreground',
+          className,
+        )}
         {...props}
       />
     </PopoverPrimitive.Portal>

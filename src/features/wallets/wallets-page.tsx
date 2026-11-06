@@ -23,9 +23,6 @@ import {
 } from '@/contracts/wallets';
 import { queryKeys } from '@/lib/query-keys';
 import { deleteWallet, getWallets, saveWallet, updateWalletConnection } from './api';
-import '@/features/catalog/home.css';
-import '@/features/profile/profile.css';
-import './wallets.css';
 
 const blank = (isPrimary: boolean): WalletInput => ({
   displayName: '',
@@ -54,20 +51,20 @@ export function WalletsPage({ userId }: { userId: string }) {
   const primary = wallets.data?.items.find((item) => item.isPrimary);
   const secondary = wallets.data?.items.find((item) => !item.isPrimary);
   return (
-    <div className="home-shell profile-shell">
+    <div className="home-shell profile-shell mx-auto max-w-[1440px] px-16 pt-12 pb-16 max-[700px]:px-4 max-[700px]:pt-6 max-[700px]:pb-12">
       <SiteHeader />
-      <main className="profile-layout">
+      <main className="profile-layout mt-8 grid grid-cols-[310px_minmax(0,1fr)] items-start gap-8 max-[700px]:mt-0 max-[700px]:grid-cols-[minmax(0,1fr)] max-[700px]:gap-6">
         <AccountSidebar active="wallets" />
         {wallets.isPending ? (
-          <div className="profile-loading" aria-label="Carregando carteiras">
+          <div className="grid gap-6 *:h-[120px]" aria-label="Carregando carteiras">
             <Skeleton />
             <Skeleton />
           </div>
         ) : wallets.isError ? (
-          <section role="alert" className="profile-feedback">
+          <section role="alert" className="grid justify-items-start gap-4">
             <p>Não foi possível carregar as carteiras.</p>
             {axios.isAxiosError(wallets.error) && wallets.error.response?.status === 401 ? (
-              <Link to="/login" search={{ redirect: '/account/wallets' }}>
+              <Link to="/login" search={{ redirect: '/account/wallets' }} className="text-primary">
                 Entrar novamente
               </Link>
             ) : (
@@ -76,13 +73,13 @@ export function WalletsPage({ userId }: { userId: string }) {
           </section>
         ) : (
           <div className="wallets-content">
-            <div className="wallets-heading">
-              <h1>Carteira principal</h1>
+            <div>
+              <h1 className="text-lg font-bold">Carteira principal</h1>
             </div>
-            <p className="wallets-description">
+            <p className="mt-2 text-sm text-muted-foreground">
               Estas carteiras ficam disponíveis no pagamento e para receber NFTs comprados.
             </p>
-            <p className="wallets-description">
+            <p className="mt-2 text-sm text-muted-foreground">
               Cadastro e conexão simulados, sem vínculo com blockchain ou gateway real. Nunca
               informe chaves privadas ou frases de recuperação.
             </p>
@@ -93,11 +90,11 @@ export function WalletsPage({ userId }: { userId: string }) {
               onDeleted={() => setCopyPrimary(false)}
             />
             {primary && <WalletConnectionControls userId={userId} wallet={primary} />}
-            <section className="wallets-secondary">
-              <div className="wallets-secondary-heading">
-                <h2>Carteira secundária</h2>
-                <div className="wallets-secondary-actions">
-                  <label>
+            <section className="mt-12">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <h2 className="text-lg font-bold">Carteira secundária</h2>
+                <div className="flex flex-wrap items-center justify-between gap-4 max-[700px]:items-start">
+                  <label className="flex cursor-pointer items-center gap-2 text-sm">
                     <Checkbox
                       checked={copyPrimary}
                       disabled={!primary}
@@ -138,7 +135,7 @@ export function WalletsPage({ userId }: { userId: string }) {
                   {secondary && <WalletConnectionControls userId={userId} wallet={secondary} />}
                 </>
               ) : (
-                <p className="wallets-description">
+                <p className="mt-2 text-sm text-muted-foreground">
                   Você ainda não adicionou uma carteira secundária.
                 </p>
               )}
@@ -166,39 +163,45 @@ function WalletConnectionControls({ userId, wallet }: { userId: string; wallet: 
         : wallet.connectionStatus === 'rejected'
           ? 'Conexão recusada'
           : 'Desconectada';
+  const statusBadgeClass =
+    wallet.connectionStatus === 'connected'
+      ? 'border-success text-success'
+      : wallet.connectionStatus === 'rejected'
+        ? 'border-destructive text-destructive'
+        : 'border-border text-muted-foreground';
   return (
     <section
-      className="wallets-connection"
+      className="mt-6 grid gap-3 rounded-md border border-border bg-surface p-4"
       aria-label={
         wallet.isPrimary ? 'Conexão da carteira principal' : 'Conexão da carteira secundária'
       }
     >
-      <div className="wallets-connection-info">
+      <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
         <strong>
           {wallet.label} ({wallet.network} · {wallet.walletType})
         </strong>
         <span
-          className={`wallets-status-badge wallets-status-badge--${wallet.connectionStatus}`}
+          className={`inline-flex items-center rounded-pill border bg-surface-raised px-3 py-1 text-xs font-bold ${statusBadgeClass}`}
           role="status"
         >
           {statusLabel}
         </span>
       </div>
       {wallet.connectionStatus === 'rejected' && (
-        <p role="alert" className="wallets-error">
+        <p role="alert" className="mt-4 text-destructive">
           Conexão recusada pela carteira simulada. A confirmação de pagamento fica bloqueada até
           conectar uma carteira.
         </p>
       )}
       {connection.isError && (
-        <p role="alert" className="wallets-error">
+        <p role="alert" className="mt-4 text-destructive">
           {axios.isAxiosError(connection.error) &&
           typeof connection.error.response?.data?.error?.message === 'string'
             ? connection.error.response.data.error.message
             : 'Não foi possível atualizar a conexão da carteira.'}
         </p>
       )}
-      <div className="wallets-connection-actions">
+      <div className="flex flex-wrap gap-3">
         {wallet.connectionStatus === 'disconnected' && (
           <>
             <Button
@@ -326,9 +329,14 @@ function WalletForm({
     label: string,
     options?: { placeholder?: string; type?: string; optional?: boolean },
   ) => (
-    <label htmlFor={`${id}-${name}`}>
+    <label htmlFor={`${id}-${name}`} className="block text-sm text-foreground">
       {label}
-      {!options?.optional && <span aria-hidden="true"> *</span>}
+      {!options?.optional && (
+        <span aria-hidden="true" className="text-destructive">
+          {' '}
+          *
+        </span>
+      )}
       <Input
         id={`${id}-${name}`}
         type={options?.type ?? 'text'}
@@ -338,8 +346,13 @@ function WalletForm({
         onChange={(event) => set(name, event.target.value)}
         aria-invalid={!!errors[name]}
         aria-describedby={errors[name] ? `${id}-${name}-error` : undefined}
+        className="mt-2 w-full"
       />
-      {errors[name] && <small id={`${id}-${name}-error`}>{errors[name]}</small>}
+      {errors[name] && (
+        <small id={`${id}-${name}-error`} className="mt-2 block text-destructive">
+          {errors[name]}
+        </small>
+      )}
     </label>
   );
   const select = (
@@ -348,10 +361,13 @@ function WalletForm({
     placeholder: string,
     choices: string[],
   ) => (
-    <div className="wallets-field">
-      <label htmlFor={`${id}-${name}`}>
+    <div>
+      <label htmlFor={`${id}-${name}`} className="block text-sm text-foreground">
         {label}
-        <span aria-hidden="true"> *</span>
+        <span aria-hidden="true" className="text-destructive">
+          {' '}
+          *
+        </span>
       </label>
       <Select value={values[name]} onValueChange={(value) => set(name, value)}>
         <SelectTrigger
@@ -359,6 +375,7 @@ function WalletForm({
           aria-required="true"
           aria-invalid={!!errors[name]}
           aria-describedby={errors[name] ? `${id}-${name}-error` : undefined}
+          className="mt-2 w-full"
         >
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
@@ -370,12 +387,16 @@ function WalletForm({
           ))}
         </SelectContent>
       </Select>
-      {errors[name] && <small id={`${id}-${name}-error`}>{errors[name]}</small>}
+      {errors[name] && (
+        <small id={`${id}-${name}-error`} className="mt-2 block text-destructive">
+          {errors[name]}
+        </small>
+      )}
     </div>
   );
   return (
     <form
-      className="wallets-form"
+      className="mt-8"
       aria-label={isPrimary ? 'Carteira principal' : 'Carteira secundária'}
       noValidate
       onSubmit={(event) => {
@@ -396,7 +417,7 @@ function WalletForm({
         mutation.mutate(parsed.data);
       }}
     >
-      <div className="wallets-fields">
+      <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-6 max-[700px]:grid-cols-[minmax(0,1fr)]">
         {field('displayName', 'Nome de exibição')}
         {field('label', 'Apelido da carteira')}
         {select('network', 'Rede', 'Selecione uma rede', ['Ethereum', 'Polygon'])}
@@ -414,12 +435,12 @@ function WalletForm({
         {field('ens', 'Nome ENS', { placeholder: 'exemplo.eth' })}
       </div>
       {Object.keys(errors).length > 0 && (
-        <p role="alert" className="wallets-error">
+        <p role="alert" className="mt-4 text-destructive">
           Confira os campos destacados.
         </p>
       )}
       {mutation.isError && (
-        <p role="alert" className="wallets-error">
+        <p role="alert" className="mt-4 text-destructive">
           {axios.isAxiosError(mutation.error) &&
           typeof mutation.error.response?.data?.error?.message === 'string'
             ? mutation.error.response.data.error.message
@@ -427,7 +448,7 @@ function WalletForm({
         </p>
       )}
       {removeMutation.isError && (
-        <p role="alert" className="wallets-error">
+        <p role="alert" className="mt-4 text-destructive">
           {axios.isAxiosError(removeMutation.error) &&
           typeof removeMutation.error.response?.data?.error?.message === 'string'
             ? removeMutation.error.response.data.error.message
@@ -435,11 +456,11 @@ function WalletForm({
         </p>
       )}
       {mutation.isSuccess && (
-        <p role="status" className="wallets-success">
+        <p role="status" className="mt-4 text-success">
           Carteira salva.
         </p>
       )}
-      <div className="wallets-form-actions">
+      <div className="mt-6 flex flex-wrap gap-4">
         <Button type="submit" disabled={mutation.isPending || removeMutation.isPending}>
           {mutation.isPending ? 'Salvando...' : 'Salvar carteira'}
         </Button>

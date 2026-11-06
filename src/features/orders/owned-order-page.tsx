@@ -8,7 +8,6 @@ import { Card } from '@/components/ui/card';
 import { useSession } from '@/features/auth/session';
 import { queryKeys } from '@/lib/query-keys';
 import { getOrder } from './api';
-import './order.css';
 
 const homeSearch = {
   q: '',
@@ -19,6 +18,10 @@ const homeSearch = {
   sort: 'recent' as const,
   page: 1,
 };
+
+const pageClass =
+  'flex min-h-screen items-start justify-center px-6 py-16 max-[600px]:px-4 max-[600px]:py-6';
+const metaItemBorderClass = 'border-l border-primary-hover pl-3';
 
 export function OwnedOrderPage({ orderId }: { orderId: string }) {
   const session = useSession();
@@ -58,9 +61,9 @@ function OrderContent({ userId, orderId }: { userId: string; orderId: string }) 
   if (order.isPending) return <main role="status">Carregando pedido...</main>;
   if (order.isError)
     return (
-      <main className="order-page">
-        <Card className="order-state">
-          <h1>Pedido indisponível</h1>
+      <main className={pageClass}>
+        <Card className="grid justify-items-start gap-4 bg-surface p-8 text-foreground">
+          <h1 className="text-lg font-bold">Pedido indisponível</h1>
           <p>
             {axios.isAxiosError(order.error) && order.error.response?.status === 404
               ? 'Pedido não encontrado.'
@@ -82,9 +85,9 @@ function OrderContent({ userId, orderId }: { userId: string; orderId: string }) 
     year: 'numeric',
   }).format(new Date(data.createdAt));
   return (
-    <main className="order-page">
-      <Card className="order-card">
-        <header className="order-header">
+    <main className={pageClass}>
+      <Card className="relative w-[min(100%,578px)] gap-0 rounded-none border-0 border-b-[10px] border-primary-hover bg-surface p-0 text-foreground shadow-none">
+        <header className="flex flex-col items-center gap-3 border-b border-primary-hover px-6 py-8 text-center [&_svg]:text-primary-hover">
           {data.status === 'confirmed' ? (
             <BadgeCheck size={56} aria-hidden="true" />
           ) : data.status === 'pending' ? (
@@ -92,100 +95,119 @@ function OrderContent({ userId, orderId }: { userId: string; orderId: string }) 
           ) : (
             <AlertCircle size={56} aria-hidden="true" />
           )}
-          <h1>
+          <h1 className="text-base font-bold">
             {data.status === 'confirmed'
               ? 'Pedido confirmado'
               : data.status === 'pending'
                 ? 'Pedido pendente'
                 : 'Pedido recusado'}
           </h1>
-          <p>Dados de demonstração da conta.</p>
+          <p className="text-sm text-muted-foreground">Dados de demonstração da conta.</p>
           {data.status === 'pending' && (
-            <p role="status" className="order-status-banner">
+            <p
+              role="status"
+              className="mt-2 rounded-sm border border-primary px-4 py-2 text-xs text-foreground"
+            >
               Processando confirmação simulada da tentativa. Não feche nem reenvie a compra.
             </p>
           )}
           {data.status === 'declined' && (
-            <p role="alert" className="order-status-banner order-status-banner--declined">
+            <p
+              role="alert"
+              className="mt-2 rounded-sm border border-destructive px-4 py-2 text-xs text-destructive"
+            >
               A tentativa foi recusada pela simulação. Seu carrinho foi preservado sem cobrança.
             </p>
           )}
         </header>
         {data.status === 'confirmed' && data.receipt && (
-          <dl className="order-meta">
+          <dl className="grid grid-cols-[repeat(4,minmax(0,1fr))] gap-3 border-b border-primary-hover px-8 py-4 text-xs text-muted-foreground max-[600px]:grid-cols-[repeat(2,minmax(0,1fr))] max-[600px]:p-4">
             <div>
-              <dt>ID da transação</dt>
-              <dd>{data.receipt.transactionRef}</dd>
+              <dt className="font-bold">ID da transação</dt>
+              <dd className="wrap-anywhere">{data.receipt.transactionRef}</dd>
             </div>
-            <div>
-              <dt>Data</dt>
-              <dd>{formattedDate}</dd>
+            <div className={metaItemBorderClass}>
+              <dt className="font-bold">Data</dt>
+              <dd className="wrap-anywhere">{formattedDate}</dd>
             </div>
-            <div>
-              <dt>Rede</dt>
-              <dd>{data.receipt.network}</dd>
+            <div className={`${metaItemBorderClass} max-[600px]:border-0 max-[600px]:p-0`}>
+              <dt className="font-bold">Rede</dt>
+              <dd className="wrap-anywhere">{data.receipt.network}</dd>
             </div>
-            <div>
-              <dt>Carteira</dt>
-              <dd>{data.receipt.wallet}</dd>
+            <div className={metaItemBorderClass}>
+              <dt className="font-bold">Carteira</dt>
+              <dd className="wrap-anywhere">{data.receipt.wallet}</dd>
             </div>
           </dl>
         )}
-        <section className="order-details">
+        <section className="px-8 pt-6 pb-12 max-[600px]:px-4 max-[600px]:pt-6 max-[600px]:pb-8">
           <p>ID do pedido: {data.id}</p>
-          <p className="order-idempotency-key">Chave da tentativa: {data.idempotencyKey}</p>
+          <p className="mb-4 text-xs text-muted-foreground">
+            Chave da tentativa: {data.idempotencyKey}
+          </p>
           {data.status === 'confirmed' && data.receipt ? (
             <>
-              <h2>Detalhes da transação</h2>
+              <h2 className="mb-4 text-sm font-bold">Detalhes da transação</h2>
               <p>Transação simulada: {data.receipt.transactionRef}</p>
               <p>
                 Rede: {data.receipt.network} · {data.receipt.wallet}
               </p>
-              <ul className="order-items">
+              <ul className="mt-3 grid gap-3">
                 {data.receipt.items.map((item) => (
-                  <li key={`${item.nftId}-${item.editionId}`}>
-                    <img src={item.image} alt="" />
-                    <div className="order-item-name">
+                  <li
+                    key={`${item.nftId}-${item.editionId}`}
+                    className="grid grid-cols-[70px_minmax(0,1fr)_auto_auto] items-center gap-3 max-[600px]:grid-cols-[56px_minmax(0,1fr)_auto]"
+                  >
+                    <img
+                      src={item.image}
+                      alt=""
+                      className="size-[70px] rounded-md object-cover max-[600px]:row-span-2 max-[600px]:size-14"
+                    />
+                    <div className="grid gap-1 text-sm">
                       <strong>{item.title}</strong>
                       <p>
                         Quantidade: {item.quantity} · {item.unitPriceEth} ETH
                       </p>
                     </div>
-                    <strong className="order-item-price">{item.subtotalEth} ETH</strong>
+                    <strong className="text-base whitespace-nowrap text-primary max-[600px]:col-[2/-1]">
+                      {item.subtotalEth} ETH
+                    </strong>
                   </li>
                 ))}
               </ul>
-              <dl className="order-totals">
-                <div>
+              <dl className="my-6 grid gap-3 border-b border-primary-hover pb-4">
+                <div className="flex justify-between gap-4">
                   <dt>Subtotal</dt>
                   <dd>{data.receipt.subtotalEth} ETH</dd>
                 </div>
-                <div>
+                <div className="flex justify-between gap-4">
                   <dt>Desconto</dt>
                   <dd>{data.receipt.discountEth} ETH</dd>
                 </div>
-                <div>
+                <div className="flex justify-between gap-4">
                   <dt>Taxa de rede</dt>
                   <dd>{data.receipt.networkFeeEth} ETH</dd>
                 </div>
-                <div>
+                <div className="flex justify-between gap-4 font-bold">
                   <dt>Total</dt>
-                  <dd>{data.receipt.totalEth} ETH</dd>
+                  <dd className="text-primary">{data.receipt.totalEth} ETH</dd>
                 </div>
               </dl>
-              <p className="order-note">
+              <p className="mb-6 text-center text-sm leading-(--line-height-body) text-muted-foreground">
                 Snapshot imutável de pedido confirmado na rede {data.receipt.network}. Nenhuma
                 transação real foi enviada à blockchain.
               </p>
-              <Button disabled>Ver no Etherscan</Button>
-              <Link to="/" search={homeSearch} className="order-return">
+              <Button disabled className="mx-auto flex">
+                Ver no Etherscan
+              </Button>
+              <Link to="/" search={homeSearch} className="mt-4 block text-center text-primary">
                 Continuar explorando
               </Link>
             </>
           ) : (
             <p>O recibo estará disponível somente após confirmação.</p>
           )}
-          <div className="order-actions">
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
             {data.status === 'declined' && (
               <Link to="/checkout" className={buttonVariants({ variant: 'outline' })}>
                 Revisar pagamento

@@ -23,14 +23,22 @@ export function HeaderSearch() {
       }}
     >
       <PopoverTrigger asChild>
-        <button type="button" className="header-search-trigger" aria-label="Abrir pesquisa">
+        <button
+          type="button"
+          className="grid min-h-12 min-w-12 cursor-pointer place-items-center text-foreground hover:text-primary"
+          aria-label="Abrir pesquisa"
+        >
           <Search size={21} aria-hidden="true" />
         </button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="header-search-popover" aria-label="Pesquisa de NFTs">
+      <PopoverContent
+        align="end"
+        className="z-60 w-[min(24rem,calc(100vw-var(--space-8)))] rounded-md border border-border bg-surface-raised p-4 text-foreground"
+        aria-label="Pesquisa de NFTs"
+      >
         <form
           role="search"
-          className="header-search-form"
+          className="grid gap-3"
           onSubmit={(event) => {
             event.preventDefault();
             setOpen(false);
@@ -41,14 +49,17 @@ export function HeaderSearch() {
             });
           }}
         >
-          <label htmlFor="header-search">Buscar NFTs</label>
-          <div>
+          <label htmlFor="header-search" className="text-sm font-bold">
+            Buscar NFTs
+          </label>
+          <div className="flex items-stretch gap-2">
             <Input
               id="header-search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Nome do NFT"
               autoComplete="off"
+              className="h-auto min-w-0 bg-input-bg"
             />
             <Button type="submit">Buscar</Button>
           </div>
