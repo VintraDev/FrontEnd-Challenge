@@ -347,3 +347,10 @@ Faça deploy preliminar ainda no primeiro dia para validar `history fallback`, w
 ## 16. Registro do milestone inicial — 04/11/2026
 
 A fundação inicial e os resultados verificados estão descritos no `README.md`. O binding publicado 0.2.0 usa `toSocketIo` com MSW 2, e o handler WebSocket usa `/` porque o MSW remove o prefixo Socket.IO na correspondência. O teste passou em desenvolvimento e preview para handshake, eventos de diagnóstico e nova conexão explícita. A reconexão automática após falha, eventos antigos/duplicados e a validação em deploy continuam pendentes; a prova não implementa reconciliação nem fluxos de negócio.
+
+## 17. Contratos compartilhados e preparo do avatar — 05/11/2026
+
+- Os limites Axios/MSW usam schemas Zod compartilhados para API/erros, catálogo/edições, sessão, perfil, carteiras, favoritos, carrinho, cotação, pedidos e eventos Socket.IO. Os valores ETH são strings decimais normalizadas; cálculos continuam restritos a `decimal.js` no mock.
+- `src/lib/query-keys.ts` mantém a forma das keys públicas já usadas e separa dados privados por `userId`; catálogo normaliza parâmetros antes de compor a key. O carrinho ainda é de visitante até a implementação do carrinho autenticado e do merge.
+- O avatar é preparado no navegador: valida tipo e limite de entrada, aplica orientação via `createImageBitmap` quando possível, redimensiona e codifica WebP antes do `PATCH /api/profile`. Um fallback de decodificação cobre navegadores que não aceitam o arquivo em `createImageBitmap`. O usuário não precisa comprimir o arquivo manualmente.
+- Os schemas de pedido e evento definem o contrato futuro; não implementam checkout, persistência de pedido ou reconciliação realtime. A API REST continua sendo a fonte de verdade quando essas features forem construídas.

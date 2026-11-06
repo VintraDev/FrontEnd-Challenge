@@ -58,23 +58,69 @@ body {
   font-weight: 700;
   cursor: pointer;
 }
-.ds-button--default { background: var(--button-primary-bg); color: var(--button-primary-text); }
-.ds-button--default:hover:not(:disabled) { background: var(--button-primary-hover-bg); }
-.ds-button--outline { background: transparent; border-color: var(--action-primary); color: var(--action-primary); }
-.ds-button--outline:hover:not(:disabled) { background: var(--bg-surface-raised); }
-.ds-button:disabled { background: var(--button-disabled-bg); color: var(--button-disabled-text); border-color: transparent; cursor: not-allowed; }
+.ds-button--default {
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+}
+.ds-button--default:hover:not(:disabled) {
+  background: var(--button-primary-hover-bg);
+}
+.ds-button--outline {
+  background: transparent;
+  border-color: var(--action-primary);
+  color: var(--action-primary);
+}
+.ds-button--outline:hover:not(:disabled) {
+  background: var(--bg-surface-raised);
+}
+.ds-button:disabled {
+  background: var(--button-disabled-bg);
+  color: var(--button-disabled-text);
+  border-color: transparent;
+  cursor: not-allowed;
+}
 
 /* Feedback compartilhado: não altera a função dos controles indisponíveis. */
-.ds-button, a, input, textarea, [data-slot='select-trigger'], [data-slot='checkbox'] {
-  transition: color var(--motion-fast) var(--motion-ease), background-color var(--motion-fast) var(--motion-ease), border-color var(--motion-fast) var(--motion-ease), box-shadow var(--motion-fast) var(--motion-ease), transform var(--motion-fast) var(--motion-ease);
+.ds-button,
+a,
+input,
+textarea,
+[data-slot='select-trigger'],
+[data-slot='checkbox'] {
+  transition:
+    color var(--motion-fast) var(--motion-ease),
+    background-color var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease),
+    box-shadow var(--motion-fast) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease);
 }
-.ds-button:not(:disabled):active { transform: scale(var(--press-scale)); }
-.ds-button--default:not(:disabled):active { background: var(--action-primary-hover); }
-.ds-button--outline:not(:disabled):active { background: var(--bg-surface-raised); }
+.ds-button:not(:disabled):active {
+  transform: scale(var(--press-scale));
+}
+.ds-button--default:not(:disabled):active {
+  background: var(--action-primary-hover);
+}
+.ds-button--outline:not(:disabled):active {
+  background: var(--bg-surface-raised);
+}
 @media (hover: hover) {
-  input:not(:disabled):hover, textarea:not(:disabled):hover, [data-slot='select-trigger']:not(:disabled):hover, [data-slot='checkbox']:not(:disabled):hover { border-color: var(--action-primary-hover); }
+  input:not(:disabled):hover,
+  textarea:not(:disabled):hover,
+  [data-slot='select-trigger']:not(:disabled):hover,
+  [data-slot='checkbox']:not(:disabled):hover {
+    border-color: var(--action-primary-hover);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0s !important; }
-  .ds-button:not(:disabled):active { transform: none; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0s !important;
+  }
+  .ds-button:not(:disabled):active {
+    transform: none;
+  }
 }

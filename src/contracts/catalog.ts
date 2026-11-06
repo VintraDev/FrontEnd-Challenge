@@ -1,12 +1,55 @@
-import { z } from 'zod'
-export const nftSchema = z.object({ id: z.string(), title: z.string(), category: z.string(), network: z.string(), image: z.string(), priceEth: z.string().regex(/^\d+(\.\d+)?$/) })
-export const catalogSchema = z.object({ items: z.array(nftSchema), total: z.number().int(), page: z.number().int(), totalPages: z.number().int() })
-export type Nft = z.infer<typeof nftSchema>
-export const searchSchema = z.object({ q: z.string().catch('').default(''), categories: z.string().catch('').default(''), network: z.string().catch('').default(''), minPrice: z.string().regex(/^\d+(\.\d+)?$/).or(z.literal('')).catch('').default(''), maxPrice: z.string().regex(/^\d+(\.\d+)?$/).or(z.literal('')).catch('').default(''), sort: z.enum(['recent', 'price-asc', 'price-desc']).catch('recent').default('recent'), page: z.coerce.number().int().min(1).catch(1).default(1) })
-export type CatalogSearch = z.infer<typeof searchSchema>
+import { z } from 'zod';
+import { createPageSchema, ethSchema, idSchema } from './api';
 
-export const editionSchema = z.object({ id: z.string(), label: z.string(), priceEth: z.string().regex(/^\d+(\.\d+)?$/), available: z.number().int().nonnegative() })
-export type Edition = z.infer<typeof editionSchema>
-export type CatalogFilters = CatalogSearch
-export const nftDetailSchema = nftSchema.extend({ description: z.string(), editions: z.array(editionSchema).min(1) })
-export type NftDetail = z.infer<typeof nftDetailSchema>
+export const nftSchema = z.object({
+  id: idSchema,
+  title: z.string().trim().min(1).max(160),
+  category: z.string().trim().min(1).max(80),
+  network: z.string().trim().min(1).max(40),
+  image: z.string().min(1).max(2048),
+  priceEth: ethSchema,
+});
+export const catalogSchema = createPageSchema(nftSchema);
+export type Nft = z.infer<typeof nftSchema>;
+const optionalEthSearchSchema = z
+  .union([ethSchema, z.literal('')])
+  .catch('')
+  .default('');
+export const searchSchema = z.object({
+  q: z.string().trim().max(120).catch('').default(''),
+  categories: z.string().catch('').default(''),
+  network: z.string().trim().max(40).catch('').default(''),
+  minPrice: optionalEthSearchSchema,
+  maxPrice: optionalEthSearchSchema,
+  sort: z.enum(['recent', 'price-asc', 'price-desc']).catch('recent').default('recent'),
+  page: z.coerce.number().int().min(1).catch(1).default(1),
+});
+export type CatalogSearch = z.infer<typeof searchSchema>;
+
+export const catalogFiltersSchema = z.object({
+  q: z.string().trim().max(120).default(''),
+  categories: z.array(z.string().trim().min(1)).default([]),
+  editions: z.array(idSchema).default([]),
+  network: z.string().trim().max(40).default(''),
+  minPrice: z.union([ethSchema, z.literal('')]).default(''),
+  maxPrice: z.union([ethSchema, z.literal('')]).default(''),
+  sort: z.enum(['recent', 'price-asc', 'price-desc']).default('recent'),
+});
+export const editionSchema = z.object({
+  id: idSchema,
+  label: z.string().trim().min(1).max(80),
+  priceEth: ethSchema,
+  available: z.number().int().nonnegative(),
+});
+export type Edition = z.infer<typeof editionSchema>;
+export type CatalogFilters = z.infer<typeof catalogFiltersSchema>;
+export function normalizeCatalogSearch(search: unknown): CatalogSearch {
+  return searchSchema.parse(search);
+}
+export const nftDetailSchema = nftSchema.extend({
+  description: z.string().trim().min(1).max(4_000),
+  images: z.array(z.string().min(1).max(2048)).default([]),
+  version: z.number().int().nonnegative().default(0),
+  editions: z.array(editionSchema).min(1),
+});
+export type NftDetail = z.infer<typeof nftDetailSchema>;

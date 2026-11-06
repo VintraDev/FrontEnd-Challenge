@@ -1,26 +1,298 @@
-import { queryKeys } from '@/lib/query-keys'
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, Wallet } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
-import { Button, buttonVariants } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Skeleton } from '@/components/ui/skeleton'
-import { getCart, getQuote } from '@/features/cart/api'
-import { SiteHeader } from '@/features/catalog/components/site-header'
-import '@/features/catalog/home.css'
-import './checkout.css'
+import { queryKeys } from '@/lib/query-keys';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { ArrowLeft, Wallet } from 'lucide-react';
+import { Link } from '@tanstack/react-router';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import { getCart, getQuote } from '@/features/cart/api';
+import { SiteHeader } from '@/features/catalog/components/site-header';
+import '@/features/catalog/home.css';
+import './checkout.css';
 
-const homeSearch = { q: '', categories: '', network: '', minPrice: '', maxPrice: '', sort: 'recent' as const, page: 1 }
+const homeSearch = {
+  q: '',
+  categories: '',
+  network: '',
+  minPrice: '',
+  maxPrice: '',
+  sort: 'recent' as const,
+  page: 1,
+};
 export function CheckoutPage() {
-  const [showMobileReview, setShowMobileReview] = useState(false)
-  const cart = useQuery({ queryKey: queryKeys.cart('guest'), queryFn: ({ signal }) => getCart(signal), refetchOnMount: 'always' })
-  const quote = useQuery({ queryKey: queryKeys.quote('guest', cart.data?.version), queryFn: ({ signal }) => getQuote(cart.data!.version, signal), enabled: !!cart.data && cart.data.lines.length > 0 && !cart.isFetching, retry: false, refetchOnMount: 'always' })
-  return <div className="home-shell checkout-shell"><SiteHeader /><main><div className="checkout-mobile-header"><Link to="/cart" aria-label="Voltar ao carrinho"><ArrowLeft size={20} /></Link><h1>Pagamento com carteira</h1></div><nav className="checkout-breadcrumb" aria-label="Trilha de navegação"><Link to="/" search={homeSearch}>Início</Link> / <Link to="/cart">Carrinho</Link> / Pagamento</nav><h1 className="checkout-title">Pagamento</h1>
-    <p className="checkout-notice" role="status">Prévia de pagamento: carteiras e confirmação de pedidos ainda não estão disponíveis. Os dados preenchidos não são salvos. <Link to="/orders/$orderId" params={{ orderId: "preview" }}>Visualizar prévia do comprovante</Link></p>
-    {cart.isPending ? <div className="checkout-loading" aria-label="Carregando carrinho"><Skeleton /><Skeleton /></div> : cart.isError ? <section className="checkout-feedback" role="alert"><h2>Não foi possível carregar o carrinho.</h2><Button onClick={() => void cart.refetch()}>Tentar novamente</Button></section> : cart.data.lines.length === 0 ? <section className="checkout-feedback"><h2>Seu carrinho está vazio</h2><p>Adicione NFTs para revisar o pagamento.</p><Link className={buttonVariants()} to="/" search={homeSearch}>Explorar NFTs</Link></section> : <><section className="checkout-mobile-wallet" aria-label="Pagamento com carteira"><div className="checkout-mobile-wallet-heading"><h2>Carteira conectada</h2><Button type="button" variant="outline" disabled>Trocar carteira</Button></div><div className="checkout-mobile-empty"><Wallet size={20} aria-hidden="true" /><div><strong>Nenhuma carteira conectada</strong><p>O cadastro e a conexão de carteiras ainda não estão disponíveis.</p></div></div><fieldset disabled className="checkout-mobile-providers"><legend>Carteira e rede</legend><label><span className="checkout-provider-icon" aria-hidden="true">W</span><span>WalletConnect</span><input type="radio" name="wallet-provider" /></label><label><span className="checkout-provider-icon" aria-hidden="true">M</span><span>MetaMask</span><input type="radio" name="wallet-provider" /></label><label><span className="checkout-provider-icon" aria-hidden="true"><Wallet size={20} /></span><span>Coinbase Wallet</span><input type="radio" name="wallet-provider" /></label></fieldset><div className="checkout-mobile-total"><strong>Total:</strong>{cart.isFetching || quote.isPending ? <span role="status">Calculando...</span> : quote.isError ? <span>Indisponível</span> : <strong>{quote.data?.totalEth} ETH</strong>}</div><Button type="button" variant="outline" className="checkout-review-toggle" aria-expanded={showMobileReview} aria-controls="checkout-review" onClick={() => setShowMobileReview((value) => !value)}>{showMobileReview ? 'Ocultar dados da revisão' : 'Revisar dados e NFTs'}</Button><div className="checkout-mobile-confirm"><Button disabled>Confirmar compra</Button></div></section><div id="checkout-review" className={`checkout-layout${showMobileReview ? ' checkout-layout--expanded' : ''}`}><section className="checkout-profile"><h2>Perfil do colecionador</h2><form onSubmit={(event) => event.preventDefault()}><div className="checkout-fields"><label>Nome de exibição <span>*</span><Input autoComplete="nickname" placeholder="Nome de exibição" /></label><label>Nome de usuário <span>*</span><Input autoComplete="username" placeholder="Nome de usuário" /></label><label>Rede <span>*</span><Select><SelectTrigger aria-label="Rede"><SelectValue placeholder="Selecione uma rede" /></SelectTrigger><SelectContent><SelectItem value="ethereum">Ethereum</SelectItem><SelectItem value="polygon">Polygon</SelectItem><SelectItem value="solana">Solana</SelectItem></SelectContent></Select></label><label>Nome do perfil <span>*</span><Input placeholder="Nome do perfil" /></label><label>Endereço da carteira <span>*</span><Input autoComplete="off" placeholder="Endereço da carteira" /></label><label>ENS ou carteira secundária (opcional)<Input autoComplete="off" placeholder="ENS ou carteira secundária" /></label><label>Tipo de carteira <span>*</span><Select disabled><SelectTrigger aria-label="Tipo de carteira"><SelectValue placeholder="Carteiras indisponíveis" /></SelectTrigger></Select></label><label>Código de indicação<Input placeholder="Código de indicação (opcional)" /></label><label>E-mail <span>*</span><Input type="email" autoComplete="email" placeholder="E-mail" /></label><label>Nome ENS<Input placeholder=".eth (opcional)" /></label></div><label className="checkout-checkbox"><Checkbox disabled /> Usar outra carteira? <span>(indisponível)</span></label><label className="checkout-note">Observação do colecionador (opcional)<textarea rows={6} placeholder="Adicione uma observação" /></label></form></section>
-    <aside className="checkout-summary"><h2>Seus NFTs</h2><div className="checkout-summary-heading"><strong>NFTs</strong><strong>Subtotal</strong></div><div className="checkout-items">{cart.data.lines.map((line) => <article className="checkout-item" key={line.id}><img src={line.image} alt="" /><div><strong>{line.title}</strong><small>Edição {line.editionLabel} · {line.quantity} {line.quantity === 1 ? 'unidade' : 'unidades'}</small></div><strong>{line.lineTotalEth} ETH</strong></article>)}</div><Link className="checkout-coupon-link" to="/cart">Tem um código promocional? Aplique no carrinho</Link>{cart.data.coupon && <p className="checkout-coupon">Cupom aplicado: {cart.data.coupon}</p>}{cart.isFetching || quote.isPending ? <p role="status">Atualizando cotação...</p> : quote.isError ? <div role="alert" className="checkout-feedback"><p>Não foi possível atualizar a cotação.</p><Button variant="outline" onClick={() => void cart.refetch()}>Tentar novamente</Button></div> : quote.data && <dl className="checkout-totals"><div><dt>Subtotal</dt><dd>{quote.data.subtotalEth} ETH</dd></div><div><dt>Desconto do lançamento</dt><dd>− {quote.data.discountEth} ETH</dd></div><div><dt>Taxa de rede estimada</dt><dd>{quote.data.networkFeeEth} ETH</dd></div><div className="checkout-total"><dt>Total</dt><dd>{quote.data.totalEth} ETH</dd></div></dl>}<h2 className="checkout-wallet-title">Carteira e rede</h2><p className="checkout-wallet-note">A seleção e a conexão de carteiras dependem da implementação de conta.</p><Button variant="outline" disabled>Conectar carteira</Button><Button className="checkout-desktop-confirm" disabled>Confirmar compra</Button><Link to="/cart">Voltar ao carrinho</Link></aside></div></>}
-  </main></div>
+  const [showMobileReview, setShowMobileReview] = useState(false);
+  const cart = useQuery({
+    queryKey: queryKeys.cart('guest'),
+    queryFn: ({ signal }) => getCart(signal),
+    refetchOnMount: 'always',
+  });
+  const quote = useQuery({
+    queryKey: queryKeys.quote('guest', cart.data?.version),
+    queryFn: ({ signal }) => getQuote(cart.data!.version, signal),
+    enabled: !!cart.data && cart.data.lines.length > 0 && !cart.isFetching,
+    retry: false,
+    refetchOnMount: 'always',
+  });
+  return (
+    <div className="home-shell checkout-shell">
+      <SiteHeader />
+      <main>
+        <div className="checkout-mobile-header">
+          <Link to="/cart" aria-label="Voltar ao carrinho">
+            <ArrowLeft size={20} />
+          </Link>
+          <h1>Pagamento com carteira</h1>
+        </div>
+        <nav className="checkout-breadcrumb" aria-label="Trilha de navegação">
+          <Link to="/" search={homeSearch}>
+            Início
+          </Link>{' '}
+          / <Link to="/cart">Carrinho</Link> / Pagamento
+        </nav>
+        <h1 className="checkout-title">Pagamento</h1>
+        <p className="checkout-notice" role="status">
+          Prévia de pagamento: carteiras e confirmação de pedidos ainda não estão disponíveis. Os
+          dados preenchidos não são salvos.{' '}
+          <Link to="/orders/$orderId" params={{ orderId: 'preview' }}>
+            Visualizar prévia do comprovante
+          </Link>
+        </p>
+        {cart.isPending ? (
+          <div className="checkout-loading" aria-label="Carregando carrinho">
+            <Skeleton />
+            <Skeleton />
+          </div>
+        ) : cart.isError ? (
+          <section className="checkout-feedback" role="alert">
+            <h2>Não foi possível carregar o carrinho.</h2>
+            <Button onClick={() => void cart.refetch()}>Tentar novamente</Button>
+          </section>
+        ) : cart.data.lines.length === 0 ? (
+          <section className="checkout-feedback">
+            <h2>Seu carrinho está vazio</h2>
+            <p>Adicione NFTs para revisar o pagamento.</p>
+            <Link className={buttonVariants()} to="/" search={homeSearch}>
+              Explorar NFTs
+            </Link>
+          </section>
+        ) : (
+          <>
+            <section className="checkout-mobile-wallet" aria-label="Pagamento com carteira">
+              <div className="checkout-mobile-wallet-heading">
+                <h2>Carteira conectada</h2>
+                <Button type="button" variant="outline" disabled>
+                  Trocar carteira
+                </Button>
+              </div>
+              <div className="checkout-mobile-empty">
+                <Wallet size={20} aria-hidden="true" />
+                <div>
+                  <strong>Nenhuma carteira conectada</strong>
+                  <p>O cadastro e a conexão de carteiras ainda não estão disponíveis.</p>
+                </div>
+              </div>
+              <fieldset disabled className="checkout-mobile-providers">
+                <legend>Carteira e rede</legend>
+                <label>
+                  <span className="checkout-provider-icon" aria-hidden="true">
+                    W
+                  </span>
+                  <span>WalletConnect</span>
+                  <input type="radio" name="wallet-provider" />
+                </label>
+                <label>
+                  <span className="checkout-provider-icon" aria-hidden="true">
+                    M
+                  </span>
+                  <span>MetaMask</span>
+                  <input type="radio" name="wallet-provider" />
+                </label>
+                <label>
+                  <span className="checkout-provider-icon" aria-hidden="true">
+                    <Wallet size={20} />
+                  </span>
+                  <span>Coinbase Wallet</span>
+                  <input type="radio" name="wallet-provider" />
+                </label>
+              </fieldset>
+              <div className="checkout-mobile-total">
+                <strong>Total:</strong>
+                {cart.isFetching || quote.isPending ? (
+                  <span role="status">Calculando...</span>
+                ) : quote.isError ? (
+                  <span>Indisponível</span>
+                ) : (
+                  <strong>{quote.data?.totalEth} ETH</strong>
+                )}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="checkout-review-toggle"
+                aria-expanded={showMobileReview}
+                aria-controls="checkout-review"
+                onClick={() => setShowMobileReview((value) => !value)}
+              >
+                {showMobileReview ? 'Ocultar dados da revisão' : 'Revisar dados e NFTs'}
+              </Button>
+              <div className="checkout-mobile-confirm">
+                <Button disabled>Confirmar compra</Button>
+              </div>
+            </section>
+            <div
+              id="checkout-review"
+              className={`checkout-layout${showMobileReview ? ' checkout-layout--expanded' : ''}`}
+            >
+              <section className="checkout-profile">
+                <h2>Perfil do colecionador</h2>
+                <form onSubmit={(event) => event.preventDefault()}>
+                  <div className="checkout-fields">
+                    <label>
+                      Nome de exibição <span>*</span>
+                      <Input autoComplete="nickname" placeholder="Nome de exibição" />
+                    </label>
+                    <label>
+                      Nome de usuário <span>*</span>
+                      <Input autoComplete="username" placeholder="Nome de usuário" />
+                    </label>
+                    <label>
+                      Rede <span>*</span>
+                      <Select>
+                        <SelectTrigger aria-label="Rede">
+                          <SelectValue placeholder="Selecione uma rede" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ethereum">Ethereum</SelectItem>
+                          <SelectItem value="polygon">Polygon</SelectItem>
+                          <SelectItem value="solana">Solana</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </label>
+                    <label>
+                      Nome do perfil <span>*</span>
+                      <Input placeholder="Nome do perfil" />
+                    </label>
+                    <label>
+                      Endereço da carteira <span>*</span>
+                      <Input autoComplete="off" placeholder="Endereço da carteira" />
+                    </label>
+                    <label>
+                      ENS ou carteira secundária (opcional)
+                      <Input autoComplete="off" placeholder="ENS ou carteira secundária" />
+                    </label>
+                    <label>
+                      Tipo de carteira <span>*</span>
+                      <Select disabled>
+                        <SelectTrigger aria-label="Tipo de carteira">
+                          <SelectValue placeholder="Carteiras indisponíveis" />
+                        </SelectTrigger>
+                      </Select>
+                    </label>
+                    <label>
+                      Código de indicação
+                      <Input placeholder="Código de indicação (opcional)" />
+                    </label>
+                    <label>
+                      E-mail <span>*</span>
+                      <Input type="email" autoComplete="email" placeholder="E-mail" />
+                    </label>
+                    <label>
+                      Nome ENS
+                      <Input placeholder=".eth (opcional)" />
+                    </label>
+                  </div>
+                  <label className="checkout-checkbox">
+                    <Checkbox disabled /> Usar outra carteira? <span>(indisponível)</span>
+                  </label>
+                  <label className="checkout-note">
+                    Observação do colecionador (opcional)
+                    <textarea rows={6} placeholder="Adicione uma observação" />
+                  </label>
+                </form>
+              </section>
+              <aside className="checkout-summary">
+                <h2>Seus NFTs</h2>
+                <div className="checkout-summary-heading">
+                  <strong>NFTs</strong>
+                  <strong>Subtotal</strong>
+                </div>
+                <div className="checkout-items">
+                  {cart.data.lines.map((line) => (
+                    <article className="checkout-item" key={line.id}>
+                      <img src={line.image} alt="" />
+                      <div>
+                        <strong>{line.title}</strong>
+                        <small>
+                          Edição {line.editionLabel} · {line.quantity}{' '}
+                          {line.quantity === 1 ? 'unidade' : 'unidades'}
+                        </small>
+                      </div>
+                      <strong>{line.lineTotalEth} ETH</strong>
+                    </article>
+                  ))}
+                </div>
+                <Link className="checkout-coupon-link" to="/cart">
+                  Tem um código promocional? Aplique no carrinho
+                </Link>
+                {cart.data.coupon && (
+                  <p className="checkout-coupon">Cupom aplicado: {cart.data.coupon}</p>
+                )}
+                {cart.isFetching || quote.isPending ? (
+                  <p role="status">Atualizando cotação...</p>
+                ) : quote.isError ? (
+                  <div role="alert" className="checkout-feedback">
+                    <p>Não foi possível atualizar a cotação.</p>
+                    <Button variant="outline" onClick={() => void cart.refetch()}>
+                      Tentar novamente
+                    </Button>
+                  </div>
+                ) : (
+                  quote.data && (
+                    <dl className="checkout-totals">
+                      <div>
+                        <dt>Subtotal</dt>
+                        <dd>{quote.data.subtotalEth} ETH</dd>
+                      </div>
+                      <div>
+                        <dt>Desconto do lançamento</dt>
+                        <dd>− {quote.data.discountEth} ETH</dd>
+                      </div>
+                      <div>
+                        <dt>Taxa de rede estimada</dt>
+                        <dd>{quote.data.networkFeeEth} ETH</dd>
+                      </div>
+                      <div className="checkout-total">
+                        <dt>Total</dt>
+                        <dd>{quote.data.totalEth} ETH</dd>
+                      </div>
+                    </dl>
+                  )
+                )}
+                <h2 className="checkout-wallet-title">Carteira e rede</h2>
+                <p className="checkout-wallet-note">
+                  A seleção e a conexão de carteiras dependem da implementação de conta.
+                </p>
+                <Button variant="outline" disabled>
+                  Conectar carteira
+                </Button>
+                <Button className="checkout-desktop-confirm" disabled>
+                  Confirmar compra
+                </Button>
+                <Link to="/cart">Voltar ao carrinho</Link>
+              </aside>
+            </div>
+          </>
+        )}
+      </main>
+    </div>
+  );
 }

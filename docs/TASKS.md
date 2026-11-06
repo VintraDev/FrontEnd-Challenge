@@ -4,7 +4,7 @@
 
 ## Estado atual e validação mais recente
 
-- **M0-02 e M0-05 parciais:** schemas de domínio e query keys compartilhadas existem; sessão, perfis, favoritos, carteiras e carrinho visitante persistem e são resetáveis. Faltam contratos e estado de pedidos, isolamento do carrinho de conta, cenários adicionais e reset integral entre bases.
+- **M0-02 validado; M0-05 parcial:** schemas de domínio e query keys compartilhadas cobrem catálogo, sessão, perfil, carteiras, favoritos, carrinho, cotação, pedidos, eventos e erros REST. Sessão, perfis, favoritos, carteiras e carrinho visitante persistem e são resetáveis. Faltam o estado de pedidos, isolamento do carrinho de conta, cenários adicionais e reset integral entre bases.
 - **M2-03 validado:** favoritos autenticados persistem por usuário, com rollback em falha. A página reutiliza a sidebar da conta; o acesso está no perfil e no menu inferior mobile.
 - **M2-04 parcial:** perfil e cadastro/edição de duas carteiras por usuário funcionam; seleção no checkout, conexão/recusa/desconexão e e-mail editável permanecem pendentes.
 - **Checkout e pedidos:** a tela de pagamento continua sendo prévia; não há confirmação de pedido real, cotação revalidada ou recibo de compra confirmado.
@@ -28,7 +28,7 @@ flowchart TD
 ## M0 — Fundação e viabilidade do desafio
 
 - [x] `M0-01` — Instalar Vite/React/TS strict, Tailwind/shadcn, Router, Query, Axios, MSW, Playwright (RNF-001/019). **Validado:** configuração, build e smoke tests; UI e rotas são uma fundação, não as telas finais.
-- [ ] `M0-02` — Definir schemas/DTOs e query keys compartilhadas (RF-001–RF-049). **Parcial:** schemas de domínio e query keys compartilhadas existem; contratos finais de pedidos, normalização de erros e fronteiras restantes continuam pendentes.
+- [x] `M0-02` — Definir schemas/DTOs e query keys compartilhadas (RF-001–RF-049). **Validado:** Zod cobre API/erros REST, catálogo/edições/filtros/paginação, sessão, perfil/avatares, carteiras, favoritos, carrinho/cotação, pedidos e eventos; query keys normalizam catálogo e particionam dados privados por usuário. Endpoints e fluxos futuros continuam em seus milestones próprios.
 - [ ] `M0-03` — REST MSW retorna catálogo via Axios, com estado de loading e erro (RF-001/008). **Parcial:** catálogo via Axios/Query/MSW e cenários reproduzíveis estão implementados; cobertura completa dos estados de erro/loading e respostas fora de ordem continua pendente.
 - [ ] `M0-04` — Spike Socket.IO real com binding e eventos `nft.updated` (RF-043/045). **Parcial:** handshake, `probe`, `nft.updated`, `order.updated` e nova conexão manual passaram em desenvolvimento e preview; faltam reconexão automática após interrupção, eventos antigos/duplicados e validação em ambiente publicado.
 - [ ] `M0-05` — Reset/persistência determinísticos com dois usuários (RF-017/049). **Parcial:** sessão, perfis, favoritos, carteiras e carrinho visitante persistem e podem ser resetados; faltam pedidos, carrinho de conta e reset integral entre bases.
@@ -117,7 +117,7 @@ flowchart TD
 
 ### Perfil do colecionador
 
-- Tela desktop baseada no frame do Pencil, com adaptação responsiva, carregamento e erro. `/account` exige sessão; `GET/PATCH /api/profile` e `POST /api/profile/password` validam a sessão no MSW e persistem dados por usuário. Nome, usuário, ENS e apelido, avatar PNG/JPEG/WebP (até 500 KB) e senha têm persistência simulada; mudança de e-mail e carteiras seguem indisponíveis.
+- Tela desktop baseada no frame do Pencil, com adaptação responsiva, carregamento e erro. `/account` exige sessão; `GET/PATCH /api/profile` e `POST /api/profile/password` validam a sessão no MSW e persistem dados por usuário. Nome, usuário, ENS e apelido, senha e avatar persistem: a aplicação aceita PNG/JPEG/WebP de até 10 MB, corrige orientação quando disponível, redimensiona, converte para WebP e limita o dado salvo a 500 KB. Mudança de e-mail e integração das carteiras ao checkout seguem pendentes.
 - Testados acesso sem sessão, persistência após refresh, troca entre contas A/B, nome sincronizado com sessão, erro de senha, nova senha, avatar e layout 320 px. A captura desktop foi inspecionada. `check:tokens`, `typecheck` e build passaram; a suíte completa teve 54 testes aprovados antes dos últimos ajustes de campos e sincronização, seguidos por 13 testes direcionados aprovados. Uma primeira tentativa de teste e outra após os botões de senha falharam por seletores/tempo; foram corrigidas e reexecutadas.
 - Pendentes: e-mail editável, carteiras e autorização das demais áreas privadas, controles de concorrência no mock e auditoria completa de acessibilidade/visual. Persistência local é somente demonstrativa.
 
@@ -212,11 +212,11 @@ Status real:
 
 ### Fundação A1/A2 — registro histórico do incremento inicial
 
-- Contratos existentes de usuário, sessão, catálogo, edição, carrinho, item, cotação e prévia de recibo foram reaproveitados e suas partes compartilhadas exportadas. `api.ts` registra códigos gerais e aceita os códigos específicos já emitidos pelos handlers; ainda não existe conversão de códigos nem contratos finais de pedido/carteira.
-- As chaves existentes foram centralizadas em `src/lib/query-keys.ts` sem alterar seus valores. Perfil e chaves reservadas para dados privados incluem o usuário; carrinho e cotação continuam explicitamente de visitante. Query usa os defaults do TanStack (incluindo três retries no cliente), exceto as consultas que já definem `retry: false`; mutations invalidam as chaves existentes. Não foi implementado o isolamento de carrinho de conta nem merge.
+- Contratos Zod compartilhados agora cobrem usuário/sessão, catálogo/edição/filtros, carrinho/cotação, perfil/avatar, favoritos, carteiras, pedidos, eventos e prévia de recibo. `api.ts` centraliza o envelope de erro e aceita `fieldErrors` retornados pelos handlers; ETH é normalizado como string decimal, sem cálculo com `number`.
+- As chaves existentes foram centralizadas em `src/lib/query-keys.ts` sem alterar a key pública do visitante. Catálogo normaliza os filtros antes da key; perfil, favoritos, carteiras e pedidos incluem o usuário; carrinho e cotação explicitam visitante ou usuário. Query usa os defaults do TanStack (incluindo três retries no cliente), exceto as consultas que já definem `retry: false`; mutations invalidam as chaves existentes. Não foi implementado o isolamento de carrinho de conta nem merge.
 - `POST /api/__test/reset` limpa sessões, usuários cadastrados, perfis e carrinhos persistidos e restaura as duas contas de fixture. As duas bases IndexedDB são limpas sequencialmente, não em uma transação atômica entre bases. A chamada não limpa token local nem cache Query de uma página já aberta; testes devem reiniciar a página/estado do cliente após reset. Pedidos, favoritos e carteiras ainda não possuem repositórios. O endpoint existe apenas quando o worker mock está ativo.
-- Cenários configuráveis de latência, rede, erros e conflitos, reset integral de recursos futuros, schemas finais de carteira/pedido e validação completa de contratos nas fronteiras permanecem pendentes; M0-02 e M0-05 continuam abertos. Proposta de compatibilização: manter os DTOs e códigos existentes, adicionar mapeamento explícito e versionar/adaptar os novos contratos antes de mudar endpoints, handlers ou consumidores.
-- Validação deste incremento: `npm run typecheck` e `npm run build` passaram; `CHROMIUM_PATH=/usr/bin/chromium SMOKE_PREVIEW=1 npm run test:smoke` passou com 55 testes. A primeira suíte teve 54 aprovados e uma falha no teste novo por chamada anterior à inicialização do worker; após sincronização, o teste direcionado e a suíte completa passaram no preview.
+- Cenários configuráveis de latência, rede, erros e conflitos, reset integral de recursos futuros e a validação de todas as fronteiras quando os endpoints de pedidos/realtime forem implementados permanecem pendentes; M0-05 continua aberto. A compatibilização preserva os DTOs e handlers já ativos e acrescenta contracts futuros sem mudar formatos REST existentes.
+- Validação deste incremento: `npm run typecheck`, `npm run build` e `npx playwright test --workers=1 --reporter=dot` passaram (66 testes). Os testes de contrato validam ETH, paginação, erros, query keys e eventos; o teste de perfil confirma que PNG enviado vira WebP automaticamente antes da persistência simulada. A execução paralela expõe interferência do cenário global de catálogo em dois testes de loading; a suíte serial é a evidência reproduzível até o isolamento desse cenário ser implementado.
 
 ### Rodapé nas telas indicadas
 

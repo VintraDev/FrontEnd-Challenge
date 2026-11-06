@@ -43,7 +43,7 @@ O carrinho ainda não é isolado por conta nem mesclado no login. Dados privados
 O cadastro cria uma conta fictícia persistida no IndexedDB e inicia sessão; os e-mails são normalizados e duplicatas retornam conflito. Novas senhas são verificadas com PBKDF2 e salt aleatório no mock. Contas e sessões locais são apenas para demonstração e podem ser inspecionadas no navegador.
 
 
-O perfil simulado em `/account` permite editar nome, nome de usuário, ENS, apelido e avatar, além de alterar a senha. Os dados são associados à sessão e persistem em `kurio-mock-auth`; o e-mail permanece somente para leitura.
+O perfil simulado em `/account` permite editar nome, nome de usuário, ENS, apelido e avatar, além de alterar a senha. O usuário pode selecionar PNG, JPEG ou WebP de até 10 MB; a aplicação corrige a orientação quando suportada, redimensiona, converte para WebP e limita o avatar persistido a 500 KB. Os dados são associados à sessão e persistem em `kurio-mock-auth`; o e-mail permanece somente para leitura.
 
 
 ## Cenários de teste MSW

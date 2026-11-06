@@ -1,11 +1,24 @@
-import { z } from 'zod'
+import { z } from 'zod';
+import { ethSchema } from './api';
 
-const eth = z.string().regex(/^\d+(\.\d+)?$/)
+const eth = ethSchema;
 export const receiptSchema = z.object({
-  transactionId: z.string(), date: z.string(), wallet: z.string(), network: z.string(),
-  items: z.array(z.object({ title: z.string(), tokenId: z.string(), image: z.string(), quantity: z.number().int().positive(), subtotalEth: eth })),
-  networkFeeEth: eth, totalEth: eth,
-})
-export type Receipt = z.infer<typeof receiptSchema>
+  transactionId: z.string(),
+  date: z.string(),
+  wallet: z.string(),
+  network: z.string(),
+  items: z.array(
+    z.object({
+      title: z.string(),
+      tokenId: z.string(),
+      image: z.string(),
+      quantity: z.number().int().positive(),
+      subtotalEth: eth,
+    }),
+  ),
+  networkFeeEth: eth,
+  totalEth: eth,
+});
+export type Receipt = z.infer<typeof receiptSchema>;
 
-export type OrderReceipt = Receipt
+export type OrderReceipt = Receipt;

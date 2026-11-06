@@ -1,67 +1,69 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from '@playwright/test';
 
 test('controles apresentam feedback de hover, pressão e foco por teclado', async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 })
-  await page.goto('/')
-  const login = page.getByRole('link', { name: 'Entrar' })
-  await expect(login).toHaveCSS('color', 'rgb(20, 13, 10)')
-  await login.hover()
-  await expect(login).toHaveCSS('background-color', 'rgb(210, 138, 76)')
-  await page.mouse.down()
-  await expect(login).not.toHaveCSS('transform', 'none')
-  await page.mouse.move(0, 0)
-  await page.mouse.up()
-  const nav = page.getByRole('link', { name: 'Mercado', exact: true })
-  await nav.hover()
-  await expect(nav).toHaveCSS('color', 'rgb(232, 155, 85)')
-  await page.keyboard.press('Tab')
-  await expect(page.locator(':focus-visible')).toHaveCSS('outline-style', 'solid')
-})
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  const login = page.getByRole('link', { name: 'Entrar' });
+  await expect(login).toHaveCSS('color', 'rgb(20, 13, 10)');
+  await login.hover();
+  await expect(login).toHaveCSS('background-color', 'rgb(210, 138, 76)');
+  await page.mouse.down();
+  await expect(login).not.toHaveCSS('transform', 'none');
+  await page.mouse.move(0, 0);
+  await page.mouse.up();
+  const nav = page.getByRole('link', { name: 'Mercado', exact: true });
+  await nav.hover();
+  await expect(nav).toHaveCSS('color', 'rgb(232, 155, 85)');
+  await page.keyboard.press('Tab');
+  await expect(page.locator(':focus-visible')).toHaveCSS('outline-style', 'solid');
+});
 
 test('movimento reduzido elimina a animação de pressão', async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: 'reduce' })
-  await page.goto('/')
-  const login = page.getByRole('link', { name: 'Entrar' })
-  await login.hover()
-  await expect(login).toHaveCSS('transition-duration', /^(0s)(, 0s)*$/)
-  await page.mouse.down()
-  await expect(login).toHaveCSS('transform', 'none')
-  await page.mouse.up()
-})
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  const login = page.getByRole('link', { name: 'Entrar' });
+  await login.hover();
+  await expect(login).toHaveCSS('transition-duration', /^(0s)(, 0s)*$/);
+  await page.mouse.down();
+  await expect(login).toHaveCSS('transform', 'none');
+  await page.mouse.up();
+});
 
 test('cards ampliam a imagem e toda a área do produto abre seus detalhes', async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 })
-  await page.goto('/')
-  const card = page.locator('.nft-card').first()
-  const link = card.locator('a')
-  const image = link.locator('img')
-  await expect(link).toBeVisible()
-  await link.hover()
-  await expect(image).not.toHaveCSS('transform', 'none')
-  await expect(image).toHaveCSS('filter', 'none')
-  await link.locator('p').click()
-  await expect(page).toHaveURL(/\/nft\//)
-})
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  const card = page.locator('.nft-card').first();
+  const link = card.locator('a');
+  const image = link.locator('img');
+  await expect(link).toBeVisible();
+  await link.hover();
+  await expect(image).not.toHaveCSS('transform', 'none');
+  await expect(image).toHaveCSS('filter', 'none');
+  await link.locator('p').click();
+  await expect(page).toHaveURL(/\/nft\//);
+});
 
 test('redução de movimento desativa a ampliação do produto', async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: 'reduce' })
-  await page.goto('/')
-  const link = page.locator('.nft-card a').first()
-  await link.hover()
-  await expect(link.locator('img')).toHaveCSS('transform', 'none')
-})
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  const link = page.locator('.nft-card a').first();
+  await link.hover();
+  await expect(link.locator('img')).toHaveCSS('transform', 'none');
+});
 
 test('footer filtra o catálogo e conteúdos indisponíveis informam seu estado', async ({ page }) => {
-  await page.goto('/')
-  await page.getByRole('button', { name: 'Saiba mais: Como funciona a propriedade de NFTs' }).click()
-  const dialog = page.getByRole('dialog')
-  await expect(dialog).toContainText('Este conteúdo ainda não está disponível.')
-  await page.keyboard.press('Escape')
-  await expect(dialog).toBeHidden()
-  await page.getByRole('button', { name: 'Central de ajuda' }).click()
-  await expect(dialog).toContainText('Este conteúdo ainda não está disponível.')
-  await page.keyboard.press('Escape')
-  await page.getByRole('link', { name: 'Fotografia', exact: true }).click()
-  await expect(page).toHaveURL(/categories=Fotografia/)
-  await expect(page.getByRole('checkbox', { name: 'Fotografia' })).toBeChecked()
-})
+  await page.goto('/');
+  await page
+    .getByRole('button', { name: 'Saiba mais: Como funciona a propriedade de NFTs' })
+    .click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toContainText('Este conteúdo ainda não está disponível.');
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await page.getByRole('button', { name: 'Central de ajuda' }).click();
+  await expect(dialog).toContainText('Este conteúdo ainda não está disponível.');
+  await page.keyboard.press('Escape');
+  await page.getByRole('link', { name: 'Fotografia', exact: true }).click();
+  await expect(page).toHaveURL(/categories=Fotografia/);
+  await expect(page.getByRole('checkbox', { name: 'Fotografia' })).toBeChecked();
+});

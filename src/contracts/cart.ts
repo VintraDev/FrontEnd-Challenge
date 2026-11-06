@@ -1,9 +1,36 @@
-import { z } from 'zod'
-const eth = z.string().regex(/^\d+(\.\d+)?$/)
-export const cartItemSchema = z.object({ id: z.string(), nftId: z.string(), editionId: z.string(), editionLabel: z.string(), title: z.string(), image: z.string(), quantity: z.number().int().positive(), available: z.number().int().nonnegative(), priceEth: eth, lineTotalEth: eth })
-export const cartSchema = z.object({ version: z.number().int(), coupon: z.string().nullable(), lines: z.array(cartItemSchema) })
-export const quoteSchema = z.object({ cartVersion: z.number().int(), subtotalEth: eth, discountEth: eth, networkFeeEth: eth, totalEth: eth })
-export type Cart = z.infer<typeof cartSchema>
+import { z } from 'zod';
+import { ethSchema, idSchema } from './api';
 
-export type CartItem = z.infer<typeof cartItemSchema>
-export type Quote = z.infer<typeof quoteSchema>
+export const cartLineInputSchema = z.object({
+  nftId: idSchema,
+  editionId: idSchema,
+  quantity: z.number().int().positive(),
+});
+export const cartQuantityInputSchema = z.object({ quantity: z.number().int().positive() });
+export const couponInputSchema = z.object({ code: z.string().trim().min(1).max(64) });
+export const cartItemSchema = cartLineInputSchema.extend({
+  id: idSchema,
+  editionLabel: z.string().trim().min(1).max(80),
+  title: z.string().trim().min(1).max(160),
+  image: z.string().min(1).max(2048),
+  available: z.number().int().nonnegative(),
+  priceEth: ethSchema,
+  lineTotalEth: ethSchema,
+});
+export const cartSchema = z.object({
+  version: z.number().int(),
+  coupon: z.string().nullable(),
+  lines: z.array(cartItemSchema),
+});
+export const quoteSchema = z.object({
+  cartVersion: z.number().int().nonnegative(),
+  subtotalEth: ethSchema,
+  discountEth: ethSchema,
+  networkFeeEth: ethSchema,
+  totalEth: ethSchema,
+});
+export const guestQuoteRequestSchema = z.object({ cartVersion: z.number().int().nonnegative() });
+export type Cart = z.infer<typeof cartSchema>;
+
+export type CartItem = z.infer<typeof cartItemSchema>;
+export type Quote = z.infer<typeof quoteSchema>;
