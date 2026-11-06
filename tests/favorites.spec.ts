@@ -1,0 +1,158 @@
+import { expect, test, type Page } from '@playwright/test';
+
+async function login(page: Page, email: string, password: string) {
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await dialog.getByLabel('E-mail').fill(email);
+  await dialog.getByLabel('Senha', { exact: true }).fill(password);
+  await dialog.getByRole('button', { name: 'Entrar', exact: true }).click();
+}
+
+test('favoritos exigem sessão, persistem, isolam contas e podem ser removidos', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/favorites');
+  await expect(page).toHaveURL(/\/login\?redirect/);
+  const unauthorized = await page.evaluate(async () => (await fetch('/api/favorites')).status);
+  expect(unauthorized).toBe(401);
+  await login(page, 'ana@kurio.test', 'KurioDemo123!');
+  await expect(page.getByRole('heading', { name: 'Você ainda não tem favoritos' })).toBeVisible();
+  await expect(page.locator('footer')).toHaveCount(0);
+  await expect(
+    page
+      .getByRole('navigation', { name: 'Menu da conta' })
+      .getByRole('link', { name: 'Lista de interesse' }),
+  ).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('header').getByRole('link', { name: 'Favoritos' })).toHaveCount(0);
+  await page.goto('/nft/nft-1');
+  const favorite = page
+    .getByRole('button', { name: 'Adicionar aos favoritos' })
+    .filter({ visible: true });
+  await Promise.all([
+    page.waitForResponse(
+      (response) =>
+        response.url().endsWith('/api/favorites') &&
+        response.request().method() === 'POST' &&
+        response.status() === 200,
+    ),
+    favorite.click(),
+  ]);
+  await expect(
+    page
+      .getByRole('button', { name: 'Remover dos favoritos', exact: true })
+      .filter({ visible: true }),
+  ).toHaveAttribute('aria-pressed', 'true');
+  await page.goto('/account');
+  await page
+    .getByRole('navigation', { name: 'Menu da conta' })
+    .getByRole('link', { name: 'Lista de interesse' })
+    .click();
+  await expect(page.getByRole('heading', { name: 'Emerald Ape #042' })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Emerald Ape #042' })).toBeVisible();
+  await page
+    .getByRole('navigation', { name: 'Menu da conta' })
+    .getByRole('button', { name: 'Sair', exact: true })
+    .click();
+  await expect(page).toHaveURL(/\/login\?redirect/);
+  await login(page, 'bruno@kurio.test', 'KurioDemo456!');
+  await expect(page.getByRole('heading', { name: 'Você ainda não tem favoritos' })).toBeVisible();
+  await page
+    .getByRole('navigation', { name: 'Menu da conta' })
+    .getByRole('button', { name: 'Sair', exact: true })
+    .click();
+  await login(page, 'ana@kurio.test', 'KurioDemo123!');
+  await expect(page.getByRole('heading', { name: 'Emerald Ape #042' })).toBeVisible();
+  await Promise.all([
+    page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/favorites/') &&
+        response.request().method() === 'DELETE' &&
+        response.status() === 200,
+    ),
+    page.getByRole('button', { name: 'Remover Emerald Ape #042 dos favoritos' }).click(),
+  ]);
+  await expect(page.getByRole('heading', { name: 'Você ainda não tem favoritos' })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Você ainda não tem favoritos' })).toBeVisible();
+});
+
+test('falha de mutation restaura favorito e reset limpa a lista', async ({ page }) => {
+  await page.goto('/login?redirect=%2Ffavorites');
+  await login(page, 'ana@kurio.test', 'KurioDemo123!');
+  await expect(page.getByRole('heading', { name: 'Você ainda não tem favoritos' })).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Menu da conta' })).toBeVisible();
+  await page.goto('/nft/nft-1');
+  await page
+    .getByRole('button', { name: 'Adicionar aos favoritos' })
+    .filter({ visible: true })
+    .click();
+  await expect(
+    page
+      .getByRole('button', { name: 'Remover dos favoritos', exact: true })
+      .filter({ visible: true }),
+  ).toBeEnabled();
+  await page.goto('/account');
+  await page
+    .getByRole('navigation', { name: 'Menu da conta' })
+    .getByRole('link', { name: 'Lista de interesse' })
+    .click();
+  await expect(page.getByRole('heading', { name: 'Emerald Ape #042' })).toBeVisible();
+  await page.evaluate(async () => {
+    await fetch('/api/__test/scenario', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ catalog: 'default', favorites: 'http-500' }),
+    });
+  });
+  await page.getByRole('button', { name: 'Remover Emerald Ape #042 dos favoritos' }).click();
+  await expect(page.getByRole('alert')).toContainText('Não foi possível remover');
+  await expect(page.getByRole('heading', { name: 'Emerald Ape #042' })).toBeVisible();
+  const result = await page.evaluate(async () => {
+    const token = localStorage.getItem('kurio-demo-session')!;
+    const headers = { Authorization: `Bearer ${token}` };
+    const before = await (await fetch('/api/favorites', { headers })).json();
+    await fetch('/api/__test/reset', { method: 'POST' });
+    const expired = (await fetch('/api/favorites', { headers })).status;
+    return { before, expired };
+  });
+  expect(result.before.items).toHaveLength(1);
+  expect(result.expired).toBe(401);
+  await page.reload();
+  await expect(page).toHaveURL(/\/login\?redirect/);
+  await login(page, 'ana@kurio.test', 'KurioDemo123!');
+  await expect(page.getByRole('heading', { name: 'Você ainda não tem favoritos' })).toBeVisible();
+});
+
+test('favoritos podem ser acessados e operados no mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await page
+    .getByRole('navigation', { name: 'Navegação inferior' })
+    .getByRole('link', { name: 'Favoritos' })
+    .click();
+  await login(page, 'ana@kurio.test', 'KurioDemo123!');
+  await expect(page.getByRole('heading', { name: 'Você ainda não tem favoritos' })).toBeVisible();
+  await page.getByRole('button', { name: 'Abrir menu da conta' }).click();
+  await expect(page.getByRole('navigation', { name: 'Menu da conta' })).toBeVisible();
+  await page.getByRole('button', { name: 'Fechar' }).click();
+  await page.goto('/nft/nft-1');
+  await Promise.all([
+    page.waitForResponse(
+      (response) =>
+        response.url().endsWith('/api/favorites') &&
+        response.request().method() === 'POST' &&
+        response.status() === 200,
+    ),
+    page.getByRole('button', { name: 'Adicionar aos favoritos' }).filter({ visible: true }).click(),
+  ]);
+  await expect(
+    page
+      .getByRole('button', { name: 'Remover dos favoritos', exact: true })
+      .filter({ visible: true }),
+  ).toBeVisible();
+  await page.goto('/favorites');
+  await expect(page.getByRole('heading', { name: 'Emerald Ape #042' })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});

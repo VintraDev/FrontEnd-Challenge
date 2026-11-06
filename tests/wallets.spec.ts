@@ -1,0 +1,231 @@
+import { expect, test, type Locator, type Page } from '@playwright/test';
+
+const address = '0x1111111111111111111111111111111111111111';
+async function login(page: Page, email: string, password: string) {
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await dialog.getByLabel('E-mail').fill(email);
+  await dialog.getByLabel('Senha', { exact: true }).fill(password);
+  await dialog.getByRole('button', { name: 'Entrar', exact: true }).click();
+}
+async function fillWallet(form: Locator, name: string) {
+  await form.getByLabel('Nome de exibição').fill(name);
+  await form.getByLabel('Apelido da carteira').fill('Minha carteira');
+  await form.getByRole('combobox', { name: 'Rede', exact: true }).click();
+  await form.page().getByRole('option', { name: 'Ethereum' }).click();
+  await form.getByLabel('Nome do perfil').fill('colecionador');
+  await form.getByLabel('Endereço da carteira').fill(address);
+  await form.getByRole('combobox', { name: 'Tipo de carteira' }).click();
+  await form.page().getByRole('option', { name: 'MetaMask' }).click();
+  await form.getByLabel('Código de indicação').fill('DEMO');
+  await form.getByLabel('E-mail').fill('ana@kurio.test');
+  await form.getByLabel('Nome ENS').fill('ana.eth');
+}
+
+test('carteiras exigem sessão, validam dados, persistem e isolam usuários', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/account/wallets');
+  await expect(page).toHaveURL(/\/login\?redirect/);
+  expect(await page.evaluate(async () => (await fetch('/api/wallets')).status)).toBe(401);
+  await login(page, 'ana@kurio.test', 'KurioDemo123!');
+  const primary = page.getByRole('form', { name: 'Carteira principal' });
+  await expect(primary).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Carteiras', exact: true })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
+  await expect(page.getByRole('link', { name: 'Dados do perfil' })).not.toHaveAttribute(
+    'aria-current',
+    'page',
+  );
+  await page.screenshot({ path: '/tmp/kurio-wallets-desktop.png', fullPage: true });
+  await primary.getByRole('button', { name: 'Salvar carteira' }).click();
+  await expect(primary.getByRole('alert')).toContainText('Confira os campos');
+  await fillWallet(primary, 'Carteira da Ana');
+  await primary.getByRole('button', { name: 'Salvar carteira' }).click();
+  await expect(primary.getByLabel('Nome de exibição')).toHaveValue('Carteira da Ana');
+  await expect(page.getByRole('checkbox', { name: 'Igual à carteira principal' })).toBeEnabled();
+  const invalid = await page.evaluate(async () => {
+    const token = localStorage.getItem('kurio-demo-session')!;
+    return (
+      await fetch('/api/wallets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ address: 'inválido' }),
+      })
+    ).status;
+  });
+  expect(invalid).toBe(422);
+  await page.reload();
+  await expect(primary.getByLabel('Nome de exibição')).toHaveValue('Carteira da Ana');
+  await primary.getByLabel('Nome de exibição').fill('Ana atualizada');
+  await primary.getByRole('button', { name: 'Salvar carteira' }).click();
+  await expect(primary.getByRole('status')).toHaveText('Carteira salva.');
+  await page.reload();
+  await expect(primary.getByLabel('Nome de exibição')).toHaveValue('Ana atualizada');
+  await page.getByRole('checkbox', { name: 'Igual à carteira principal' }).check();
+  const secondary = page.getByRole('form', { name: 'Carteira secundária' });
+  await expect(secondary.getByLabel('Nome de exibição')).toHaveValue('Ana atualizada');
+  await secondary.getByLabel('Apelido da carteira').fill('Secundária');
+  await secondary.getByRole('button', { name: 'Salvar carteira' }).click();
+  await expect(secondary.getByRole('status')).toHaveText('Carteira salva.');
+  await page.reload();
+  await expect(secondary.getByLabel('Apelido da carteira')).toHaveValue('Secundária');
+  const walletId = await page.evaluate(async () => {
+    const token = localStorage.getItem('kurio-demo-session')!;
+    const data = await (
+      await fetch('/api/wallets', { headers: { Authorization: `Bearer ${token}` } })
+    ).json();
+    return data.items[0].id as string;
+  });
+  await page
+    .getByRole('navigation', { name: 'Menu da conta' })
+    .getByRole('button', { name: 'Sair' })
+    .click();
+  await login(page, 'bruno@kurio.test', 'KurioDemo456!');
+  await expect(primary.getByLabel('Nome de exibição')).toBeEmpty();
+  const forbidden = await page.evaluate(
+    async ({ walletId, address }) => {
+      const token = localStorage.getItem('kurio-demo-session')!;
+      return (
+        await fetch(`/api/wallets/${walletId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            displayName: 'Bruno',
+            label: 'Outra',
+            network: 'Ethereum',
+            profileName: 'Bruno',
+            address,
+            secondaryAddress: '',
+            walletType: 'MetaMask',
+            referralCode: 'TESTE',
+            email: 'bruno@kurio.test',
+            ens: 'bruno.eth',
+            isPrimary: true,
+          }),
+        })
+      ).status;
+    },
+    { walletId, address },
+  );
+  expect(forbidden).toBe(404);
+});
+
+test('falha de gravação preserva dados e reset remove carteiras', async ({ page }) => {
+  await page.goto('/account/wallets');
+  await login(page, 'ana@kurio.test', 'KurioDemo123!');
+  const form = page.getByRole('form', { name: 'Carteira principal' });
+  await fillWallet(form, 'Primeira carteira');
+  await form.getByRole('button', { name: 'Salvar carteira' }).click();
+  await expect(page.getByRole('checkbox', { name: 'Igual à carteira principal' })).toBeEnabled();
+  await page.evaluate(async () => {
+    await fetch('/api/__test/scenario', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ catalog: 'default', wallets: 'http-500' }),
+    });
+  });
+  await form.getByLabel('Nome de exibição').fill('Alteração rejeitada');
+  await form.getByRole('button', { name: 'Salvar carteira' }).click();
+  await expect(form.getByRole('alert')).toContainText('Não foi possível salvar');
+  await page.reload();
+  await expect(form.getByLabel('Nome de exibição')).toHaveValue('Primeira carteira');
+  await page.evaluate(async () => {
+    await fetch('/api/__test/reset', { method: 'POST' });
+  });
+  await page.reload();
+  await login(page, 'ana@kurio.test', 'KurioDemo123!');
+  await expect(form.getByLabel('Nome de exibição')).toBeEmpty();
+});
+
+test('formulário de carteiras funciona em viewport mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/account/wallets');
+  await login(page, 'ana@kurio.test', 'KurioDemo123!');
+  const form = page.getByRole('form', { name: 'Carteira principal' });
+  await fillWallet(form, 'Carteira mobile');
+  await form.getByRole('button', { name: 'Salvar carteira' }).click();
+  await expect(page.getByRole('checkbox', { name: 'Igual à carteira principal' })).toBeEnabled();
+  await page.reload();
+  await expect(form.getByLabel('Nome de exibição')).toHaveValue('Carteira mobile');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: '/tmp/kurio-wallets-mobile.png', fullPage: true });
+});
+
+test('carteiras simulam conexão, recusa, desconexão, exclusão e bloqueiam segredos reais', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/account/wallets');
+  await login(page, 'ana@kurio.test', 'KurioDemo123!');
+
+  const primary = page.getByRole('form', { name: 'Carteira principal' });
+  await fillWallet(primary, 'Carteira Principal Ana');
+  await primary
+    .getByLabel('Endereço da carteira')
+    .fill('0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef');
+  await primary.getByRole('button', { name: 'Salvar carteira' }).click();
+  await expect(primary).toContainText('Nunca informe chaves privadas ou frases de recuperação');
+
+  const secretRejectedByApi = await page.evaluate(async () => {
+    const token = localStorage.getItem('kurio-demo-session')!;
+    return (
+      await fetch('/api/wallets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          displayName: 'Ana',
+          label: 'Secreta',
+          network: 'Ethereum',
+          profileName: 'ana',
+          address:
+            'abandon ability able about above absent absorb abstract absurd abuse access accident',
+          secondaryAddress: '',
+          walletType: 'MetaMask',
+          referralCode: 'DEMO',
+          email: 'ana@kurio.test',
+          ens: 'ana.eth',
+          isPrimary: true,
+        }),
+      })
+    ).status;
+  });
+  expect(secretRejectedByApi).toBe(422);
+
+  await primary.getByLabel('Endereço da carteira').fill(address);
+  await primary.getByRole('button', { name: 'Salvar carteira' }).click();
+  const primaryConn = page.getByRole('region', { name: 'Conexão da carteira principal' });
+  await expect(primaryConn).toBeVisible();
+  await expect(primaryConn.getByRole('status')).toHaveText('Desconectada');
+
+  await primaryConn.getByRole('button', { name: 'Simular recusa' }).click();
+  await expect(primaryConn.getByRole('status')).toHaveText('Conexão recusada');
+  await expect(primaryConn.getByRole('alert')).toContainText(
+    'Conexão recusada pela carteira simulada',
+  );
+
+  await primaryConn.getByRole('button', { name: 'Tentar novamente' }).click();
+  await expect(primaryConn.getByRole('status')).toHaveText('Desconectada');
+
+  await primaryConn.getByRole('button', { name: 'Conectar carteira' }).click();
+  await expect(primaryConn.getByRole('status')).toHaveText('Conectada');
+  await page.reload();
+  await expect(primaryConn.getByRole('status')).toHaveText('Conectada');
+
+  await primaryConn.getByRole('button', { name: 'Desconectar carteira' }).click();
+  await expect(primaryConn.getByRole('status')).toHaveText('Desconectada');
+
+  await page.getByRole('checkbox', { name: 'Igual à carteira principal' }).check();
+  const secondary = page.getByRole('form', { name: 'Carteira secundária' });
+  await secondary.getByLabel('Apelido da carteira').fill('Reserva Polygon');
+  await secondary.getByRole('combobox', { name: 'Rede', exact: true }).click();
+  await page.getByRole('option', { name: 'Polygon' }).click();
+  await secondary.getByRole('button', { name: 'Salvar carteira' }).click();
+  await expect(page.getByRole('region', { name: 'Conexão da carteira secundária' })).toBeVisible();
+
+  await secondary.getByRole('button', { name: 'Remover carteira' }).click();
+  await expect(page.getByText('Você ainda não adicionou uma carteira secundária.')).toBeVisible();
+  await page.reload();
+  await expect(page.getByText('Você ainda não adicionou uma carteira secundária.')).toBeVisible();
+});

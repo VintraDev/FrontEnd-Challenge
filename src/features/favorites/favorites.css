@@ -1,0 +1,50 @@
+.favorites-main {
+  padding: 0 0 var(--space-16);
+  min-height: 70vh;
+}
+.favorites-main h1 {
+  margin-top: var(--space-8);
+  font-size: var(--font-size-2xl);
+  line-height: var(--line-height-heading);
+  font-weight: 700;
+}
+.favorites-back,
+.favorites-description {
+  color: var(--text-secondary);
+}
+.favorites-description {
+  margin: var(--space-3) 0 var(--space-8);
+}
+.favorites-feedback {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-4);
+  padding: var(--space-12) 0;
+}
+.favorites-feedback h2 {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+}
+.favorites-feedback p {
+  color: var(--text-secondary);
+}
+.favorites-main .nft-content > button {
+  margin-top: var(--space-4);
+  width: 100%;
+}
+.favorites-error {
+  color: var(--feedback-error);
+  margin-top: var(--space-4);
+}
+@media (max-width: 700px) {
+  .favorites-back {
+    display: none;
+  }
+  .favorites-main {
+    padding: 0 0 var(--space-16);
+  }
+  .favorites-main h1 {
+    margin-top: 0;
+    font-size: var(--font-size-xl);
+  }
+}

@@ -1,0 +1,67 @@
+import type { OrderDetail } from '@/contracts/order-detail';
+
+// Historical fictional fixtures. The checkout does not create or confirm orders yet.
+export const orderFixtures: OrderDetail[] = [
+  {
+    id: 'order-demo-a',
+    userId: 'collector-a',
+    version: 1,
+    status: 'confirmed',
+    idempotencyKey: 'demo-attempt-a',
+    transactionRef: 'simulated-transaction-a',
+    createdAt: '2026-11-05T12:00:00.000Z',
+    quoteSnapshot: {
+      id: 'quote-demo-a',
+      version: '1',
+      expiresAt: '2026-11-05T12:10:00.000Z',
+      network: 'Ethereum',
+      items: [{ nftId: 'nft-1', editionId: 'ten', quantity: 1, unitPriceEth: '1.19' }],
+      subtotalEth: '1.19',
+      discountEth: '0',
+      networkFeeEth: '0.016',
+      totalEth: '1.206',
+    },
+    receipt: {
+      orderId: 'order-demo-a',
+      transactionRef: 'simulated-transaction-a',
+      network: 'Ethereum',
+      wallet: 'Carteira fictícia',
+      items: [
+        {
+          nftId: 'nft-1',
+          editionId: 'ten',
+          title: 'Emerald Ape #042',
+          image: '/assets/nfts/image-import-1.png',
+          quantity: 1,
+          unitPriceEth: '1.19',
+          subtotalEth: '1.19',
+        },
+      ],
+      subtotalEth: '1.19',
+      discountEth: '0',
+      networkFeeEth: '0.016',
+      totalEth: '1.206',
+    },
+  },
+  {
+    id: 'order-demo-b',
+    userId: 'collector-b',
+    version: 1,
+    status: 'pending',
+    idempotencyKey: 'demo-attempt-b',
+    transactionRef: null,
+    createdAt: '2026-11-05T12:00:00.000Z',
+    quoteSnapshot: {
+      id: 'quote-demo-b',
+      version: '1',
+      expiresAt: '2026-11-05T12:10:00.000Z',
+      network: 'Ethereum',
+      items: [{ nftId: 'nft-2', editionId: 'ten', quantity: 1, unitPriceEth: '1.69' }],
+      subtotalEth: '1.69',
+      discountEth: '0',
+      networkFeeEth: '0.016',
+      totalEth: '1.706',
+    },
+    receipt: null,
+  },
+];

@@ -1,0 +1,137 @@
+@import '@fontsource/roboto-mono/400.css';
+@import '@fontsource/roboto-mono/700.css';
+@import './tokens.css';
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+@import 'tailwindcss';
+
+@theme inline {
+  --color-background: var(--bg-canvas);
+  --color-foreground: var(--text-primary);
+  --color-surface: var(--bg-surface);
+  --color-surface-raised: var(--bg-surface-raised);
+  --color-muted-foreground: var(--text-secondary);
+  --color-primary: var(--action-primary);
+  --color-primary-foreground: var(--button-primary-text);
+  --color-border: var(--border-default);
+  --color-ring: var(--focus-ring);
+  --color-input: var(--border-default);
+  --color-card: var(--bg-surface);
+  --color-card-foreground: var(--text-primary);
+  --color-popover: var(--bg-surface);
+  --color-popover-foreground: var(--text-primary);
+  --color-accent: var(--bg-surface-raised);
+  --color-accent-foreground: var(--text-primary);
+  --color-destructive: var(--feedback-error);
+  --font-sans: var(--font-mono);
+  --spacing: var(--space-1);
+  --text-xs: var(--font-size-xs);
+  --text-sm: var(--font-size-sm);
+  --text-base: var(--font-size-md);
+  --text-lg: var(--font-size-lg);
+  --text-xl: var(--font-size-xl);
+  --text-2xl: var(--font-size-2xl);
+}
+
+body {
+  margin: 0;
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-body);
+}
+
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.ds-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--space-12);
+  padding: var(--space-3) var(--space-6);
+  border: var(--border-width-default) solid transparent;
+  border-radius: var(--button-radius);
+  font: inherit;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  cursor: pointer;
+}
+.ds-button--default {
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+}
+.ds-button--default:hover:not(:disabled) {
+  background: var(--button-primary-hover-bg);
+}
+.ds-button--outline {
+  background: transparent;
+  border-color: var(--action-primary);
+  color: var(--action-primary);
+}
+.ds-button--outline:hover:not(:disabled) {
+  background: var(--bg-surface-raised);
+}
+.ds-button:disabled {
+  background: var(--button-disabled-bg);
+  color: var(--button-disabled-text);
+  border-color: transparent;
+  cursor: not-allowed;
+}
+
+/* Feedback compartilhado: não altera a função dos controles indisponíveis. */
+.ds-button,
+a,
+input,
+textarea,
+[data-slot='select-trigger'],
+[data-slot='checkbox'] {
+  transition:
+    color var(--motion-fast) var(--motion-ease),
+    background-color var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease),
+    box-shadow var(--motion-fast) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease);
+}
+.ds-button:not(:disabled):active {
+  transform: scale(var(--press-scale));
+}
+.ds-button--default:not(:disabled):active {
+  background: var(--action-primary-hover);
+}
+.ds-button--outline:not(:disabled):active {
+  background: var(--bg-surface-raised);
+}
+@media (hover: hover) {
+  input:not(:disabled):hover,
+  textarea:not(:disabled):hover,
+  [data-slot='select-trigger']:not(:disabled):hover,
+  [data-slot='checkbox']:not(:disabled):hover {
+    border-color: var(--action-primary-hover);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0s !important;
+  }
+  .ds-button:not(:disabled):active {
+    transform: none;
+  }
+}

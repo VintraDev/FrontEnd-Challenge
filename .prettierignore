@@ -1,0 +1,10 @@
+node_modules/
+dist/
+playwright-report/
+test-results/
+graphify-out/
+.agents/
+public/mockServiceWorker.js
+src/routeTree.gen.ts
+package-lock.json
+pnpm-lock.yaml
