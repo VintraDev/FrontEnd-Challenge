@@ -11,8 +11,9 @@ export function MobileNavigation() {
   const session = useSession();
   const logout = useLogout();
   const cart = useQuery({
-    queryKey: queryKeys.cart('guest'),
+    queryKey: queryKeys.cart(session.data?.user.id ?? 'guest'),
     queryFn: ({ signal }) => getCart(signal),
+    enabled: !session.isPending,
   });
   const [accountOpen, setAccountOpen] = useState(false);
   const [hash, setHash] = useState(() => window.location.hash);

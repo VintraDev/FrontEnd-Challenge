@@ -1,9 +1,11 @@
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
+import { readScenario } from './scenarios/catalog';
+import { disconnectUserWallets } from './db/wallets';
 import { z } from 'zod';
 import { registrationSchema } from '@/contracts/auth';
 import { passwordInputSchema, profileInputSchema, type Profile } from '@/contracts/profile';
 
-const users = [
+const initialUsers = [
   {
     id: 'collector-a',
     name: 'Ana Colecionadora',
@@ -17,6 +19,7 @@ const users = [
     passwordHash: '07e5edac20d530e8f64004cddfed22bd5a111db9d034ab8b539419ad80d03df4',
   },
 ];
+let users = initialUsers.map((user) => ({ ...user }));
 type StoredSession = {
   token: string;
   user: { id: string; name: string; email: string };
@@ -49,6 +52,7 @@ export async function resetAuth(): Promise<void> {
   } finally {
     db.close();
   }
+  users = initialUsers.map((user) => ({ ...user }));
 }
 async function access<T>(
   mode: IDBTransactionMode,
@@ -82,7 +86,10 @@ export async function sessionFrom(request: Request) {
   if (!token) return null;
   const session = await access<StoredSession | undefined>('readonly', (store) => store.get(token));
   if (!session || session.expiresAt <= Date.now()) {
-    if (session) await access('readwrite', (store) => store.delete(token));
+    if (session) {
+      await access('readwrite', (store) => store.delete(token));
+      await disconnectUserWallets(session.user.id);
+    }
     return null;
   }
   return session;
@@ -257,7 +264,10 @@ export const authHandlers = [
   http.patch('/api/profile', async ({ request }) => {
     try {
       const session = await sessionFrom(request);
-      if (!session) return error(401, 'SESSION_EXPIRED', 'Sessão ausente ou expirada.');
+      if (!session) {
+        if (readScenario().auth === 'delayed-expired-profile') await delay(1500);
+        return error(401, 'SESSION_EXPIRED', 'Sessão ausente ou expirada.');
+      }
       const input = profileInputSchema.safeParse(await request.json());
       if (!input.success)
         return HttpResponse.json(
@@ -275,6 +285,81 @@ export const authHandlers = [
       return HttpResponse.json(profile);
     } catch {
       return error(500, 'PROFILE_ERROR', 'Não foi possível salvar o perfil.');
+    }
+  }),
+  http.patch('/api/profile/email', async ({ request }) => {
+    try {
+      const session = await sessionFrom(request);
+      if (!session) return error(401, 'SESSION_EXPIRED', 'Sessão ausente ou expirada.');
+      const input = z
+        .object({ email: z.email().transform((value) => value.toLowerCase()) })
+        .safeParse(await request.json());
+      if (!input.success) return error(422, 'VALIDATION_ERROR', 'Informe um e-mail válido.');
+      const registered = await access<RegisteredUser | undefined>(
+        'readonly',
+        (store) => store.get(input.data.email),
+        'users',
+      );
+      if (
+        registered ||
+        initialUsers.some((user) => user.email === input.data.email) ||
+        users.some((user) => user.id !== session.user.id && user.email === input.data.email)
+      )
+        return error(409, 'EMAIL_EXISTS', 'Este e-mail já está em uso.');
+      const token = tokenFrom(request)!;
+      const db = await open();
+      try {
+        await new Promise<void>((resolve, reject) => {
+          const tx = db.transaction(['users', 'sessions', 'profiles'], 'readwrite');
+          const userStore = tx.objectStore('users');
+          const profileStore = tx.objectStore('profiles');
+          const savedUser = userStore.get(session.user.email);
+          const savedProfile = profileStore.get(session.user.id);
+          savedUser.onsuccess = () => {
+            if (savedUser.result) {
+              userStore.delete(session.user.email);
+              userStore.put({ ...savedUser.result, email: input.data.email }, input.data.email);
+            }
+          };
+          savedProfile.onsuccess = () =>
+            profileStore.put(
+              {
+                ...(savedProfile.result ?? {
+                  displayName: session.user.name,
+                  username: session.user.name,
+                  ens: '',
+                  walletNickname: '',
+                  avatar: null,
+                }),
+                email: input.data.email,
+              },
+              session.user.id,
+            );
+          tx.objectStore('sessions').put(
+            {
+              ...session,
+              user: { ...session.user, email: input.data.email },
+            },
+            token,
+          );
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+          tx.onabort = () => reject(tx.error);
+        });
+      } finally {
+        db.close();
+      }
+      users = users.map((user) =>
+        user.id === session.user.id ? { ...user, email: input.data.email } : user,
+      );
+      const profile = await access<Profile | undefined>(
+        'readonly',
+        (store) => store.get(session.user.id),
+        'profiles',
+      );
+      return HttpResponse.json(profile);
+    } catch {
+      return error(500, 'PROFILE_ERROR', 'Não foi possível alterar o e-mail.');
     }
   }),
   http.post('/api/profile/password', async ({ request }) => {
@@ -315,7 +400,13 @@ export const authHandlers = [
   http.post('/api/auth/logout', async ({ request }) => {
     try {
       const token = tokenFrom(request);
-      if (token) await access('readwrite', (store) => store.delete(token));
+      if (token) {
+        const existing = await access<StoredSession | undefined>('readonly', (store) =>
+          store.get(token),
+        );
+        await access('readwrite', (store) => store.delete(token));
+        if (existing) await disconnectUserWallets(existing.user.id);
+      }
       return new HttpResponse(null, { status: 204 });
     } catch {
       return error(500, 'AUTH_ERROR', 'Não foi possível encerrar a sessão.');

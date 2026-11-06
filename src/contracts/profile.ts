@@ -35,6 +35,7 @@ export const profileRecordSchema = profileSchema.extend({
   updatedAt: isoDateTimeSchema,
 });
 export const profileUpdateSchema = profileInputSchema;
+export const profileEmailUpdateSchema = z.object({ email: emailSchema });
 export const passwordInputSchema = z
   .object({
     currentPassword: z.string().min(8).max(256),
@@ -49,5 +50,6 @@ export const changePasswordRequestSchema = passwordInputSchema;
 export type Profile = z.output<typeof profileSchema>;
 export type ProfileInput = z.output<typeof profileInputSchema>;
 export type ProfileUpdate = ProfileInput;
+export type ProfileEmailUpdate = z.output<typeof profileEmailUpdateSchema>;
 export type ProfileImageFileMetadata = z.output<typeof profileImageFileMetadataSchema>;
 export type ProfileImageOptimization = z.output<typeof profileImageOptimizationSchema>;

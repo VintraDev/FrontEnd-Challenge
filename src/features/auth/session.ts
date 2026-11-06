@@ -1,6 +1,7 @@
 import { queryKeys } from '@/lib/query-keys';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getSession, logout } from './api';
+import { sessionTokenKey } from '@/lib/http';
 
 export function safeRedirect(value: unknown): string {
   if (
@@ -34,8 +35,10 @@ export function useLogout() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: logout,
-    onSuccess: async () => {
+    onSuccess: async (ended) => {
+      if (!ended) return;
       await client.cancelQueries();
+      if (localStorage.getItem(sessionTokenKey)) return;
       client.removeQueries({ predicate: (query) => query.queryKey[0] !== 'session' });
       client.setQueryData(queryKeys.session(), null);
     },

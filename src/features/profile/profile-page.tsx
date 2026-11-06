@@ -10,8 +10,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { AccountSidebar } from '@/components/account/account-sidebar';
 import { SiteHeader } from '@/features/catalog/components/site-header';
 import { profileInputSchema, type Profile, type ProfileInput } from '@/contracts/profile';
+import { normalizeApiError } from '@/lib/errors';
 import { prepareProfileImage, ProfileImagePreparationError } from '@/lib/profile-image';
-import { changePassword, getProfile, updateProfile } from './api';
+import { changePassword, getProfile, updateProfile, updateProfileEmail } from './api';
 import '@/features/catalog/home.css';
 import './profile.css';
 
@@ -19,8 +20,7 @@ function errorMessage(error: unknown) {
   if (axios.isAxiosError(error)) {
     if (error.response?.status === 401)
       return 'Sua sessão expirou. Entre novamente para continuar.';
-    const message = error.response?.data?.error?.message;
-    if (typeof message === 'string') return message;
+    return (error.normalized ?? normalizeApiError(error)).message;
   }
   return 'Não foi possível concluir a operação. Tente novamente.';
 }
@@ -71,6 +71,8 @@ function ProfileForms({ initial, userId }: { initial: Profile; userId: string })
     avatar: initial.avatar,
   });
   const [formError, setFormError] = useState('');
+  const [email, setEmail] = useState(initial.email);
+  const [emailError, setEmailError] = useState('');
   const [passwords, setPasswords] = useState({
     currentPassword: '',
     newPassword: '',
@@ -91,10 +93,26 @@ function ProfileForms({ initial, userId }: { initial: Profile; userId: string })
     mutationFn: changePassword,
     onSuccess: () => setPasswords({ currentPassword: '', newPassword: '', confirmation: '' }),
   });
+  const emailMutation = useMutation({
+    mutationFn: updateProfileEmail,
+    onSuccess: async () => {
+      await Promise.all([
+        client.invalidateQueries({ queryKey: queryKeys.profile(userId) }),
+        client.invalidateQueries({ queryKey: queryKeys.session() }),
+      ]);
+    },
+  });
   const set = (field: keyof ProfileInput, value: string | null) => {
     setForm((current) => ({ ...current, [field]: value }));
     setFormError('');
     update.reset();
+  };
+  const submitEmail = () => {
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      setEmailError('Informe um e-mail válido.');
+      return;
+    }
+    emailMutation.mutate(email);
   };
   const avatarChange = async (file?: File) => {
     if (!file) return;
@@ -153,11 +171,33 @@ function ProfileForms({ initial, userId }: { initial: Profile; userId: string })
             E-mail
             <Input
               type="email"
-              value={initial.email}
-              readOnly
+              value={email}
+              autoComplete="email"
+              aria-invalid={!!emailError || emailMutation.isError}
               aria-describedby="profile-email-help"
+              onChange={(event) => {
+                setEmail(event.target.value);
+                setEmailError('');
+                emailMutation.reset();
+              }}
+              onInput={(event) => {
+                setEmail(event.currentTarget.value);
+                setEmailError('');
+                emailMutation.reset();
+              }}
             />
-            <small id="profile-email-help">A alteração de e-mail ainda não está disponível.</small>
+            <small id="profile-email-help">
+              Use um e-mail que ainda não pertença a outra conta.
+            </small>
+            <Button type="button" disabled={emailMutation.isPending} onClick={submitEmail}>
+              {emailMutation.isPending ? 'Atualizando e-mail...' : 'Atualizar e-mail'}
+            </Button>
+            {(emailError || emailMutation.isError) && (
+              <span role="alert" className="profile-error">
+                {emailError || errorMessage(emailMutation.error)}
+              </span>
+            )}
+            {emailMutation.isSuccess && <span role="status">E-mail atualizado.</span>}
           </label>
           <label>
             Nome ENS <span className="profile-optional">(opcional)</span>

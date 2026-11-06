@@ -29,6 +29,10 @@ export const realtimeEventSchema = z.discriminatedUnion('type', [
   orderUpdatedEventSchema,
 ]);
 
+// Available only through `/api/__test/event` while MSW is enabled. It deliberately
+// reuses the production event payload so tests cannot bypass socket validation.
+export const realtimeControlSchema = realtimeEventSchema;
+
 export type NftUpdatedEvent = z.output<typeof nftUpdatedEventSchema>;
 export type OrderUpdatedEvent = z.output<typeof orderUpdatedEventSchema>;
 export type RealtimeEvent = z.output<typeof realtimeEventSchema>;

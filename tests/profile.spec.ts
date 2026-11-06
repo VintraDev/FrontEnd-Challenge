@@ -59,11 +59,42 @@ test('senha é validada e alterada para o usuário autenticado', async ({ page }
   await expect(page.getByRole('heading', { name: 'Perfil do colecionador' })).toBeVisible();
 });
 
+test('e-mail é validado, detecta conflito e persiste na sessão', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(async () => {
+    await fetch('/api/__test/reset', { method: 'POST' });
+  });
+  await page.goto('/account');
+  await login(page, 'ana@kurio.test', 'KurioDemo123!');
+  const email = page.getByLabel('E-mail');
+  await expect(email).toHaveValue('ana@kurio.test');
+  await email.fill('bruno@kurio.test');
+  await expect(email).toHaveValue('bruno@kurio.test');
+  await page.getByRole('button', { name: 'Atualizar e-mail' }).click();
+  await expect(page.getByRole('alert')).toContainText('já está em uso');
+  await email.fill('ana.nova@kurio.test');
+  await page.getByRole('button', { name: 'Atualizar e-mail' }).click();
+  await expect(page.getByRole('status')).toContainText('E-mail atualizado.');
+  await page.reload();
+  await expect(email).toHaveValue('ana.nova@kurio.test');
+});
+
 test('perfil é utilizável no mobile', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 800 });
   await page.goto('/account');
   await login(page, 'ana@kurio.test', 'KurioDemo123!');
   await expect(page.getByRole('heading', { name: 'Perfil do colecionador' })).toBeVisible();
+  await expect(page.locator('aside.profile-sidebar')).toBeHidden();
+  await expect(page.getByRole('button', { name: 'Abrir menu da conta' })).toBeVisible();
+  await page.getByRole('button', { name: 'Abrir menu da conta' }).click();
+  const mobileNav = page.getByRole('navigation', { name: 'Menu da conta' });
+  await expect(mobileNav).toBeVisible();
+  await expect(mobileNav.getByRole('link', { name: 'Dados do perfil' })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
+  await page.getByRole('button', { name: 'Fechar' }).click();
+  await expect(mobileNav).toBeHidden();
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
   ).toBeTruthy();

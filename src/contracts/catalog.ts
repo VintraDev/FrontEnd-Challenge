@@ -11,8 +11,12 @@ export const nftSchema = z.object({
 });
 export const catalogSchema = createPageSchema(nftSchema);
 export type Nft = z.infer<typeof nftSchema>;
+const removeSearchQuotes = (value: unknown) =>
+  typeof value === 'string' && value.startsWith('"') && value.endsWith('"')
+    ? value.slice(1, -1)
+    : value;
 const optionalEthSearchSchema = z
-  .union([ethSchema, z.literal('')])
+  .preprocess(removeSearchQuotes, z.union([ethSchema, z.literal('')]))
   .catch('')
   .default('');
 export const searchSchema = z.object({

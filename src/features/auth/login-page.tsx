@@ -35,7 +35,7 @@ export function LoginPage({ redirect }: { redirect?: string }) {
     mutationFn: login,
     onSuccess: async (session) => {
       await client.cancelQueries();
-      client.clear();
+      client.removeQueries({ predicate: (query) => query.queryKey[0] !== 'session' });
       client.setQueryData(queryKeys.session(), session);
       await navigate({ href: safeRedirect(redirect), replace: true });
     },

@@ -134,7 +134,9 @@ test('favoritos podem ser acessados e operados no mobile', async ({ page }) => {
     .click();
   await login(page, 'ana@kurio.test', 'KurioDemo123!');
   await expect(page.getByRole('heading', { name: 'Você ainda não tem favoritos' })).toBeVisible();
+  await page.getByRole('button', { name: 'Abrir menu da conta' }).click();
   await expect(page.getByRole('navigation', { name: 'Menu da conta' })).toBeVisible();
+  await page.getByRole('button', { name: 'Fechar' }).click();
   await page.goto('/nft/nft-1');
   await Promise.all([
     page.waitForResponse(

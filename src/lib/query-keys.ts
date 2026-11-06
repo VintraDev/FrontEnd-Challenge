@@ -7,10 +7,21 @@ export const queryKeys = {
   nft: (id: string) => ['nft', id] as const,
   cart: (scope: string) =>
     scope === 'guest' ? (['cart', 'guest'] as const) : (['cart', 'user', scope] as const),
-  quote: (scope: string, version: number | undefined) =>
+  quote: (
+    scope: string,
+    version: number | undefined,
+    context?: { walletId: string; network: string },
+  ) =>
     scope === 'guest'
-      ? (['quote', 'guest', version] as const)
-      : (['quote', 'user', scope, version] as const),
+      ? (['quote', 'guest', version, context?.walletId ?? null, context?.network ?? null] as const)
+      : ([
+          'quote',
+          'user',
+          scope,
+          version,
+          context?.walletId ?? null,
+          context?.network ?? null,
+        ] as const),
   profile: (userId: string) => ['user', userId, 'profile'] as const,
   favorites: (userId: string) => ['user', userId, 'favorites'] as const,
   wallets: (userId: string) => ['user', userId, 'wallets'] as const,
