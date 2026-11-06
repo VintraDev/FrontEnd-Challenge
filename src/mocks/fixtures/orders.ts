@@ -31,7 +31,7 @@ export const orderFixtures: OrderDetail[] = [
           nftId: 'nft-1',
           editionId: 'ten',
           title: 'Emerald Ape #042',
-          image: '/assets/nfts/image-import-1.png',
+          image: '/assets/nfts/image-import-1.webp',
           quantity: 1,
           unitPriceEth: '1.19',
           subtotalEth: '1.19',

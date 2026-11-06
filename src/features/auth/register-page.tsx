@@ -93,7 +93,7 @@ export function RegisterPage({ redirect }: { redirect?: string }) {
             <h1>SEJA DONO DO FUTURO DA ARTE DIGITAL</h1>
             <p>Descubra NFTs selecionados de criadores do mundo todo.</p>
           </div>
-          <img src="/assets/nfts/image-import-1.png" alt="" />
+          <img src="/assets/nfts/image-import-1.webp" alt="" width={640} height={640} />
         </section>
       </div>
       <Dialog

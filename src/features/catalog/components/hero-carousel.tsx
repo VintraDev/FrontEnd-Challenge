@@ -7,7 +7,6 @@ import {
   CarouselItem,
   type CarouselApi,
 } from '@/components/ui/carousel';
-import { Skeleton } from '@/components/ui/skeleton';
 
 interface HeroCarouselProps {
   products: Nft[];
@@ -32,21 +31,8 @@ export function HeroCarousel({ products, isLoading }: HeroCarouselProps) {
   }, [api]);
 
   if (!products.length) {
-    if (isLoading) {
-      return (
-        <section className="hero hero-carousel-empty" aria-busy={isLoading} aria-label="Destaques">
-          <div className="hero-copy">
-            <Skeleton className="hero-carousel-heading-skeleton" />
-            <Skeleton className="hero-carousel-copy-skeleton" />
-            <Skeleton className="hero-carousel-action-skeleton" />
-          </div>
-          <Skeleton className="hero-carousel-image-skeleton" />
-        </section>
-      );
-    }
-
     return (
-      <section className="hero" aria-label="Destaques">
+      <section className="hero" aria-busy={isLoading || undefined} aria-label="Destaques">
         <div className="hero-copy">
           <p className="eyebrow">Bem-vindo à Kurio</p>
           <h1 className="desktop-hero-title">
@@ -67,8 +53,11 @@ export function HeroCarousel({ products, isLoading }: HeroCarouselProps) {
           </a>
         </div>
         <img
-          src="/assets/nfts/image-import-1.png"
+          src="/assets/nfts/image-import-1.webp"
           alt="Arte digital de um macaco com roupa verde"
+          width={640}
+          height={640}
+          fetchPriority="high"
         />
       </section>
     );
@@ -121,11 +110,24 @@ export function HeroCarousel({ products, isLoading }: HeroCarouselProps) {
                       ? 'Descubra NFTs selecionados de criadores do mundo todo.'
                       : `${product.category} · ${product.priceEth} ETH`}
                   </p>
-                  <Link className="hero-link" to="/nft/$nftId" params={{ nftId: product.id }}>
+                  <Link
+                    className="hero-link"
+                    to="/nft/$nftId"
+                    params={{ nftId: product.id }}
+                    aria-label={`Explorar ${product.title}`}
+                  >
                     EXPLORAR
                   </Link>
                 </div>
-                <img src={product.image} alt={product.title} />
+                <img
+                  src={product.image}
+                  alt={product.title}
+                  width={640}
+                  height={640}
+                  fetchPriority={isWelcomeSlide ? 'high' : 'low'}
+                  loading={isWelcomeSlide ? undefined : 'lazy'}
+                  decoding={isWelcomeSlide ? undefined : 'async'}
+                />
               </section>
             </CarouselItem>
           );

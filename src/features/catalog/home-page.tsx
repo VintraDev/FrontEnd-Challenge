@@ -236,9 +236,12 @@ export function HomePage() {
               <p>NFT EM DESTAQUE</p>
               <strong>OFERTA LIMITADA</strong>
               <img
-                src="/assets/nfts/image-import.png"
+                src="/assets/nfts/image-import.webp"
                 alt="Arte digital de colecionável"
+                width={640}
+                height={640}
                 loading="lazy"
+                decoding="async"
               />
             </div>
           </aside>
@@ -246,7 +249,7 @@ export function HomePage() {
             <div className="catalog-toolbar">
               <div>
                 <div className="mobile-catalog-tabs">
-                  <strong>Todos os NFTs</strong>
+                  <h2>Todos os NFTs</h2>
                   <span>Novos lançamentos</span>
                   <span>Em alta</span>
                 </div>
@@ -317,13 +320,21 @@ export function HomePage() {
             ) : (
               <>
                 <div className="product-grid">
-                  {query.data.items.map((nft) => (
+                  {query.data.items.map((nft, index) => (
                     <Card key={nft.id} className="nft-card">
                       <CardContent className="nft-content">
                         <Link to="/nft/$nftId" params={{ nftId: nft.id }} className="nft-card-link">
                           <span className="nft-image">
                             <span className="nft-image-clip">
-                              <img src={nft.image} alt={`Arte de ${nft.title}`} loading="lazy" />
+                              <img
+                                src={nft.image}
+                                alt={`Arte de ${nft.title}`}
+                                width={640}
+                                height={640}
+                                loading={index < 2 ? undefined : 'lazy'}
+                                fetchPriority={index < 2 ? 'high' : undefined}
+                                decoding="async"
+                              />
                             </span>
                           </span>
                           <h3>{nft.title}</h3>
@@ -359,7 +370,14 @@ export function HomePage() {
                 Saiba mais sobre lançamentos gênesis de edição limitada
               </span>
             </UnavailableAction>
-            <img src="/assets/nfts/image-import-1.png" alt="" loading="lazy" />
+            <img
+              src="/assets/nfts/image-import-1.webp"
+              alt=""
+              width={640}
+              height={640}
+              loading="lazy"
+              decoding="async"
+            />
             <div>
               <h2>Lançamentos gênesis de edição limitada</h2>
               <p>
@@ -374,7 +392,14 @@ export function HomePage() {
             >
               <span className="sr-only">Saiba mais sobre arte digital selecionada</span>
             </UnavailableAction>
-            <img src="/assets/nfts/image-import-3.png" alt="" loading="lazy" />
+            <img
+              src="/assets/nfts/image-import-3.webp"
+              alt=""
+              width={640}
+              height={640}
+              loading="lazy"
+              decoding="async"
+            />
             <div>
               <h2>Arte digital selecionada e muito mais</h2>
               <p>
@@ -395,9 +420,12 @@ export function HomePage() {
                   <span className="sr-only">Saiba mais: {title}</span>
                 </UnavailableAction>
                 <img
-                  src={`/assets/nfts/${['image-import-1.png', 'image-import.png', 'image-import-3.png', 'image-import-2.png'][i]}`}
+                  src={`/assets/nfts/${['image-import-1.webp', 'image-import.webp', 'image-import-3.webp', 'image-import-2.webp'][i]}`}
                   alt=""
+                  width={640}
+                  height={640}
                   loading="lazy"
+                  decoding="async"
                 />
                 <CardContent>
                   <h3>{title}</h3>

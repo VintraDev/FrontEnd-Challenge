@@ -22,10 +22,10 @@ const categories = [
   'Utilidade',
 ];
 const images = [
-  '/assets/nfts/image-import-1.png',
-  '/assets/nfts/image-import.png',
-  '/assets/nfts/image-import-3.png',
-  '/assets/nfts/image-import-2.png',
+  '/assets/nfts/image-import-1.webp',
+  '/assets/nfts/image-import.webp',
+  '/assets/nfts/image-import-3.webp',
+  '/assets/nfts/image-import-2.webp',
 ];
 const prices = ['1.19', '1.69', '1.99', '1.29', '1.39', '1.79', '0.99', '0.39', '2.19'];
 export const catalog: Nft[] = Array.from({ length: 27 }, (_, index) => ({
