@@ -12,7 +12,12 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"tests/**/*.ts\" \"scripts/**/*.mjs\" \"*.{json,js,ts}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"tests/**/*.ts\" \"scripts/**/*.mjs\" \"*.{json,js,ts}\"",
     "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "test:smoke": "playwright test",
+    "test:e2e:preview": "SMOKE_PREVIEW=1 playwright test --workers=2 --reporter=html",
+    "quality:gate": "node scripts/quality-gate.mjs",
     "check:tokens": "node scripts/check-design-tokens.mjs"
   },
   "dependencies": {
@@ -25,6 +30,7 @@
     "clsx": "^2.1.1",
     "cn": "^0.5.2",
     "decimal.js": "^10.6.0",
+    "embla-carousel-react": "^8.6.0",
     "lucide-react": "^1.69.0",
     "msw": "^2.15.0",
     "radix-ui": "^1.8.1",
@@ -44,6 +50,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.2.1",
+    "@vitest/coverage-v8": "^5.1.0",
     "eslint": "^10.14.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react-hooks": "^7.1.1",
@@ -53,7 +60,8 @@
     "tailwindcss": "^4.3.4",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.72.1",
-    "vite": "^8.3.5"
+    "vite": "^8.3.5",
+    "vitest": "^5.1.0"
   },
   "msw": {
     "workerDirectory": [
